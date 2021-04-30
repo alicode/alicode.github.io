@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Hello Hexo</title>
+  <title>阿里發發電腦筆記</title>
   
-  <subtitle>Welcome to My First Hexo</subtitle>
+  <subtitle>Alibaba Wiki - 菩薩球球</subtitle>
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
