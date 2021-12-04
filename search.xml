@@ -8,17 +8,28 @@
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nvm install --lts</span><br></pre></td></tr></table></figure>
 <h2 id="Install-Hexo-by-npm"><a href="#Install-Hexo-by-npm" class="headerlink" title="Install  Hexo by npm"></a>Install  Hexo by npm</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install -g hexo-cli</span><br></pre></td></tr></table></figure>
 <h2 id="First-Hexo"><a href="#First-Hexo" class="headerlink" title="First Hexo"></a>First Hexo</h2><h3 id="簡單建立一個MyBlog"><a href="#簡單建立一個MyBlog" class="headerlink" title="簡單建立一個MyBlog"></a>簡單建立一個MyBlog</h3><ul>
-<li>建立一個MyBlog<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo -v</span><br><span class="line">hexo init  MyBlog</span><br></pre></td></tr></table></figure></li>
-<li>簡單建立一篇文章叫做 First Hexo<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo new <span class="string">&quot;First Hexo&quot;</span></span><br></pre></td></tr></table></figure></li>
-<li>輸出靜態頁面<br>會在此目錄下 MyBlog/public/ 生成html靜態頁面<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo generate</span><br></pre></td></tr></table></figure>
-或是使用簡碼<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo g</span><br></pre></td></tr></table></figure></li>
-<li>瀏覽生成頁面<br>hexo 預設自帶web server ; Listen Port: 4000 ; <a href="http://localhost:4000/">http://localhost:4000</a><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo server</span><br><span class="line"><span class="comment">###或是使用簡碼也可</span></span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-<h3 id="更換theme"><a href="#更換theme" class="headerlink" title="更換theme"></a>更換theme</h3>hexo 網路上推薦 <a href="https://github.com/theme-next/hexo-theme-next">NexT</a></li>
-<li>install NexT<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> MyBlog</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/theme-next/hexo-theme-next themes/next</span><br></pre></td></tr></table></figure></li>
-<li>修正網站設定 - theme<br>搜尋關鍵字 <strong>theme</strong> ,將預設 landscape -&gt; next<br>MyBlog/_config.yml<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment">##theme: landscape</span></span><br><span class="line"><span class="attr">theme:</span> <span class="string">next</span></span><br></pre></td></tr></table></figure>
+<li><p>建立一個MyBlog</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo -v</span><br><span class="line">hexo init  MyBlog</span><br></pre></td></tr></table></figure></li>
+<li><p>簡單建立一篇文章叫做 First Hexo</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo new <span class="string">&quot;First-Hexo&quot;</span></span><br></pre></td></tr></table></figure>
+<p>會這此目錄下 source/_posts/ 生成 First-Hexo.md</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">source&#x2F;_posts&#x2F;First-Hexo.md</span><br></pre></td></tr></table></figure></li>
+<li><p>輸出靜態頁面<br>會在此目錄下 MyBlog/public/ 生成html靜態頁面</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo generate</span><br></pre></td></tr></table></figure>
+<p>或是使用簡碼</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo g</span><br></pre></td></tr></table></figure></li>
+<li><p>瀏覽生成頁面<br>hexo 預設自帶web server ; Listen Port: 4000 ; <a href="http://localhost:4000/">http://localhost:4000</a></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo server</span><br><span class="line"><span class="comment">###或是使用簡碼也可</span></span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+<h3 id="更換theme"><a href="#更換theme" class="headerlink" title="更換theme"></a>更換theme</h3><p>hexo 網路上推薦 <a href="https://github.com/theme-next/hexo-theme-next">NexT</a></p>
+</li>
+<li><p>install NexT</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> MyBlog</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/theme-next/hexo-theme-next themes/next</span><br></pre></td></tr></table></figure></li>
+<li><p>修正網站設定 - theme<br>搜尋關鍵字 <strong>theme</strong> ,將預設 landscape -&gt; next<br>MyBlog/_config.yml</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment">##theme: landscape</span></span><br><span class="line"><span class="attr">theme:</span> <span class="string">next</span></span><br></pre></td></tr></table></figure>
 <h3 id="有RSS功能"><a href="#有RSS功能" class="headerlink" title="有RSS功能"></a>有RSS功能</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install hexo-generator-feed --save</span><br></pre></td></tr></table></figure>
 <h3 id="發佈到GitPage"><a href="#發佈到GitPage" class="headerlink" title="發佈到GitPage"></a>發佈到GitPage</h3></li>
-<li>發佈之前, 需要安裝hexo Plugin - <strong>hexo-deployer-git</strong><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git –save</span><br></pre></td></tr></table></figure></li>
+<li><p>發佈之前, 需要安裝hexo Plugin - <strong>hexo-deployer-git</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git –save</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料:"></a>參考資料:</h2><ul>
 <li><a href="https://zespia.tw/blog/2012/10/11/hexo-debut/">hexo發源地-Hexo 颯爽登場</a></li>
