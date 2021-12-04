@@ -20,20 +20,32 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="Install nvm12345curl -o- https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;nvm-sh&#x2F;nvm&#x2F;v0.38.0&#x2F;install.sh | bashcommand -v nvmwhich nvmnvm lsnvm current Install node by nvm安裝長期支援的版本 1nvm install --lts Install  Hexo by">
+  <meta name="description" content="使用ssh Reverse Tunnel 突破防火牆或NAT限制 架構圖 背景說明 實作說明 參考資料架構圖 試想一個情況,公司區網有一部A主機可以對外連線上網都沒問題,可是這部A主機是在防火牆或NAT後端裡面,外部B主機是無法連到這部A主機。若不想在防火牆設定由外部 mapping A主機的話,就可以利用 SSH Reverse Tunnel。   背景說明 - 區域網的 A主機(windows">
 <meta property="og:type" content="article">
-<meta property="og:title" content="First Hexo">
-<meta property="og:url" content="http://example.com/2021/04/17/First-Hexo/index.html">
+<meta property="og:title" content="SSh-Reverse-Tunnel-RDP">
+<meta property="og:url" content="http://example.com/2019/01/20/SSh-Reverse-Tunnel-RDP/index.html">
 <meta property="og:site_name" content="阿里發發電腦筆記">
-<meta property="og:description" content="Install nvm12345curl -o- https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;nvm-sh&#x2F;nvm&#x2F;v0.38.0&#x2F;install.sh | bashcommand -v nvmwhich nvmnvm lsnvm current Install node by nvm安裝長期支援的版本 1nvm install --lts Install  Hexo by">
+<meta property="og:description" content="使用ssh Reverse Tunnel 突破防火牆或NAT限制 架構圖 背景說明 實作說明 參考資料架構圖 試想一個情況,公司區網有一部A主機可以對外連線上網都沒問題,可是這部A主機是在防火牆或NAT後端裡面,外部B主機是無法連到這部A主機。若不想在防火牆設定由外部 mapping A主機的話,就可以利用 SSH Reverse Tunnel。   背景說明 - 區域網的 A主機(windows">
 <meta property="og:locale" content="zh_TW">
-<meta property="article:published_time" content="2021-04-17T08:04:33.000Z">
-<meta property="article:modified_time" content="2021-12-04T07:48:11.927Z">
+<meta property="og:image" content="https://i.imgur.com/wxn8PHY.jpg">
+<meta property="og:image" content="https://i.imgur.com/7GwQ1M2.png">
+<meta property="og:image" content="https://i.imgur.com/WZF1bBO.png">
+<meta property="og:image" content="https://i.imgur.com/Fjr72mO.png">
+<meta property="og:image" content="https://i.imgur.com/gnP20m9.png">
+<meta property="og:image" content="https://i.imgur.com/KXxk0ql.png">
+<meta property="og:image" content="https://i.imgur.com/7PUOZqq.png">
+<meta property="og:image" content="https://i.imgur.com/zz4uEA2.png">
+<meta property="og:image" content="https://i.imgur.com/wym4YOO.png">
+<meta property="article:published_time" content="2019-01-20T07:58:34.000Z">
+<meta property="article:modified_time" content="2021-12-04T09:18:12.247Z">
 <meta property="article:author" content="Alicode">
-<meta property="article:tag" content="Hexo">
+<meta property="article:tag" content="SSH">
+<meta property="article:tag" content="資安">
+<meta property="article:tag" content="Reverse-Tunnel">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/wxn8PHY.jpg">
 
-<link rel="canonical" href="http://example.com/2021/04/17/First-Hexo/">
+<link rel="canonical" href="http://example.com/2019/01/20/SSh-Reverse-Tunnel-RDP/">
 
 
 <script id="page-configurations">
@@ -46,7 +58,7 @@
   };
 </script>
 
-  <title>First Hexo | 阿里發發電腦筆記</title>
+  <title>SSh-Reverse-Tunnel-RDP | 阿里發發電腦筆記</title>
   
 
 
@@ -186,7 +198,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/17/First-Hexo/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2019/01/20/SSh-Reverse-Tunnel-RDP/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -199,7 +211,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          First Hexo
+          SSh-Reverse-Tunnel-RDP
         </h1>
 
         <div class="post-meta">
@@ -209,14 +221,14 @@
               </span>
               <span class="post-meta-item-text">發表於</span>
 
-              <time title="創建時間：2021-04-17 16:04:33" itemprop="dateCreated datePublished" datetime="2021-04-17T16:04:33+08:00">2021-04-17</time>
+              <time title="創建時間：2019-01-20 15:58:34" itemprop="dateCreated datePublished" datetime="2019-01-20T15:58:34+08:00">2019-01-20</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2021-12-04 15:48:11" itemprop="dateModified" datetime="2021-12-04T15:48:11+08:00">2021-12-04</time>
+                <time title="修改時間：2021-12-04 17:18:12" itemprop="dateModified" datetime="2021-12-04T17:18:12+08:00">2021-12-04</time>
               </span>
 
           
@@ -230,56 +242,41 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="Install-nvm"><a href="#Install-nvm" class="headerlink" title="Install nvm"></a>Install nvm</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash</span><br><span class="line"><span class="built_in">command</span> -v nvm</span><br><span class="line"><span class="built_in">which</span> nvm</span><br><span class="line">nvm ls</span><br><span class="line">nvm current</span><br></pre></td></tr></table></figure>
-<h2 id="Install-node-by-nvm"><a href="#Install-node-by-nvm" class="headerlink" title="Install node by nvm"></a>Install node by nvm</h2><p>安裝長期支援的版本</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvm install --lts</span><br></pre></td></tr></table></figure>
-<h2 id="Install-Hexo-by-npm"><a href="#Install-Hexo-by-npm" class="headerlink" title="Install  Hexo by npm"></a>Install  Hexo by npm</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g hexo-cli</span><br></pre></td></tr></table></figure>
-<h2 id="First-Hexo"><a href="#First-Hexo" class="headerlink" title="First Hexo"></a>First Hexo</h2><h3 id="簡單建立一個MyBlog"><a href="#簡單建立一個MyBlog" class="headerlink" title="簡單建立一個MyBlog"></a>簡單建立一個MyBlog</h3><ul>
-<li><p>建立一個MyBlog</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo -v</span><br><span class="line">hexo init  MyBlog</span><br></pre></td></tr></table></figure></li>
-<li><p>簡單建立一篇文章叫做 First Hexo</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new <span class="string">&quot;First-Hexo&quot;</span></span><br></pre></td></tr></table></figure>
-<p>會這此目錄下 source/_posts/ 生成 First-Hexo.md</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source&#x2F;_posts&#x2F;First-Hexo.md</span><br></pre></td></tr></table></figure></li>
-<li><p>輸出靜態頁面<br>會在此目錄下 MyBlog/public/ 生成html靜態頁面</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo generate</span><br></pre></td></tr></table></figure>
-<p>或是使用簡碼</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo g</span><br></pre></td></tr></table></figure></li>
-<li><p>瀏覽生成頁面<br>hexo 預設自帶web server ; Listen Port: 4000 ; <a target="_blank" rel="noopener" href="http://localhost:4000/">http://localhost:4000</a></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo server</span><br><span class="line"><span class="comment">###或是使用簡碼也可</span></span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-<h3 id="更換theme"><a href="#更換theme" class="headerlink" title="更換theme"></a>更換theme</h3><p>hexo 網路上推薦 <a target="_blank" rel="noopener" href="https://github.com/theme-next/hexo-theme-next">NexT</a></p>
-</li>
-<li><p>install NexT</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> MyBlog</span><br><span class="line">git <span class="built_in">clone</span> https://github.com/theme-next/hexo-theme-next themes/next</span><br></pre></td></tr></table></figure></li>
-<li><p>修正網站設定 - theme<br>搜尋關鍵字 <strong>theme</strong> ,將預設 landscape -&gt; next<br>MyBlog/_config.yml</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">##theme: landscape</span></span><br><span class="line"><span class="attr">theme:</span> <span class="string">next</span></span><br></pre></td></tr></table></figure>
-<h3 id="有RSS功能"><a href="#有RSS功能" class="headerlink" title="有RSS功能"></a>有RSS功能</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-generator-feed --save</span><br></pre></td></tr></table></figure>
-<h3 id="發佈到GitPage"><a href="#發佈到GitPage" class="headerlink" title="發佈到GitPage"></a>發佈到GitPage</h3></li>
-<li><p>發佈之前, 需要安裝hexo Plugin - <strong>hexo-deployer-git</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-deployer-git –save</span><br></pre></td></tr></table></figure></li>
-<li><p>編輯 _config.yml ,到deploy 區段增加 repo</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https:&#x2F;&#x2F;Token@github.com&#x2F;&lt;UserName&gt;&#x2F;&lt;UserName&gt;.github.io.git</span><br><span class="line">  ##repo: https:&#x2F;&#x2F;github.com&#x2F;&lt;Username&gt;&#x2F;&lt;UserName&gt;.github.io.git -- old</span><br><span class="line">  branch: main</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>2021/08/13 GitHub開始使用新的認證方式(Token,SSH),使用舊有認證會有錯誤訊息<br>remote: Support for password authentication was removed on August 13, 2021. Please use a personal access token instead.<br>remote: Please see <a target="_blank" rel="noopener" href="https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations/">https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations/</a> for more informat</p>
-</blockquote>
-</li>
-<li><p>開始發佈到GitHub</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo deploy</span><br><span class="line"><span class="comment">###或是使用簡碼也可</span></span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure></li>
+        <h1 id="使用ssh-Reverse-Tunnel-突破防火牆或NAT限制"><a href="#使用ssh-Reverse-Tunnel-突破防火牆或NAT限制" class="headerlink" title="使用ssh Reverse Tunnel 突破防火牆或NAT限制"></a>使用ssh Reverse Tunnel 突破防火牆或NAT限制</h1><ul>
+<li><a href="#depolymap">架構圖</a></li>
+<li><a href="#background">背景說明</a></li>
+<li><a href="#stepbystep">實作說明</a></li>
+<li><a href="#arduinoinfo">參考資料</a><h2 id="depolymap">架構圖</h2>
+試想一個情況,公司區網有一部A主機可以對外連線上網都沒問題,可是這部A主機是在防火牆或NAT後端裡面,外部B主機是無法連到這部A主機。若不想在防火牆設定由外部 mapping A主機的話,就可以利用 SSH Reverse Tunnel。</li>
 </ul>
-<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料:"></a>參考資料:</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://zespia.tw/blog/2012/10/11/hexo-debut/">hexo發源地-Hexo 颯爽登場</a></li>
-<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/users/20119486/ironman/2944">第 12 屆 iT 邦幫忙鐵人賽-試著學 Hexo 系列</a></li>
-<li><a target="_blank" rel="noopener" href="https://titangene.github.io/article/nvm.html">nvm：安裝、切換不同 Node.js 版本的管理器</a></li>
-<li><a target="_blank" rel="noopener" href="https://hexo.io/zh-tw/docs/">官網-Hexo Docs</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.muji.dev/2020/02/16/hexo-github-page/">使用 Hexo 搭配 Github Page 建置自己的部落格</a></li>
-<li><a target="_blank" rel="noopener" href="https://hackmd.io/@king87515/Sy16ckymU">Git+Hexo-架設個人靜態網站</a></li>
-<li><a target="_blank" rel="noopener" href="https://myctw.github.io/post/bd72.html">Mac 上改變 Git 認證模式</a></li>
-<li><strong>石頭的coding之路-Hexo</strong><ul>
-<li><a target="_blank" rel="noopener" href="https://isdaniel.github.io/github-hexo-appveyor/">建立自己Blog系列(一) 介紹 Github (hosting) + Hexo (Blog) + Appveyor(CICD)</a></li>
-<li><a target="_blank" rel="noopener" href="https://isdaniel.github.io/hexo-github-setting/">建立自己Blog系列(二) github Setting</a></li>
-<li><a target="_blank" rel="noopener" href="https://isdaniel.github.io/hexo-blog-theme/">建立自己Blog系列(三) Hexo next theme 介紹</a></li>
+<p><img src="https://i.imgur.com/wxn8PHY.jpg" alt="SSh Reverse Tunnel架構圖"></p>
+<h2 id="background">背景說明</h2>
+- 區域網的 A主機(windows ) 192.168.88.8 , 有開啟RDP(有開啟遠端桌面服務,僅在區域網路使用)
+- 外部B主機(Linux,在Google GCP 租用的),35.221.139.139 (Public IP, 配合演示使用的),有開啟SSHD服務
+- 本篇主要目的,要從 Google GCP 租用的外部B主機連到區域網路A主機RDP服務
+
+<h2 id="stepbystep">實作說明</h2>
+如上圖顯示紫色那一段為第1步,綠色為第2步。
+
+<h3 id="第1步-先在A主機建立與B主機的Reverse-Tunnel連線"><a href="#第1步-先在A主機建立與B主機的Reverse-Tunnel連線" class="headerlink" title="第1步: 先在A主機建立與B主機的Reverse Tunnel連線"></a>第1步: 先在A主機建立與B主機的Reverse Tunnel連線</h3><p>A主機是Windows,用putty ssh 外部B主機</p>
+<p><strong>填上外部B主機ip位址</strong><br><img src="https://i.imgur.com/7GwQ1M2.png" alt="填上外部B主機ip位址"></p>
+<p><strong>填上Login帳號</strong><br><img src="https://i.imgur.com/WZF1bBO.png" alt="填上Login帳號"><br><strong>此步驟非必要的,此篇登入外部B主機是使用憑證方式</strong><br><img src="https://i.imgur.com/Fjr72mO.png" alt="此步驟非必要的,此篇登入外部B主機是使用憑證方式"><br><strong>最重要!!,設定reverse Tunnel</strong></p>
+<ul>
+<li>Source port:<strong>3389</strong>     表示給外部連線用的</li>
+<li>Destination : <strong>127.0.0.1:3389</strong> 表示連線A主機內部服務<br><img src="https://i.imgur.com/gnP20m9.png" alt="此步驟非必要的,此篇登入外部B主機是使用憑證方式"></li>
 </ul>
-</li>
+<p><strong>完成連線</strong></p>
+<ul>
+<li>表示已連線登入到外部B主機</li>
+<li>紅色圈起來表示 上圖Source port部份<br><img src="https://i.imgur.com/KXxk0ql.png" alt="完成連線"></li>
+</ul>
+<h3 id="第2步-從B主機連線到內網A主機"><a href="#第2步-從B主機連線到內網A主機" class="headerlink" title="第2步: 從B主機連線到內網A主機"></a>第2步: 從B主機連線到內網A主機</h3><p><strong>使用freerdp這個套件連線 內網A主機rdp服務</strong><br><img src="https://i.imgur.com/7PUOZqq.png" alt="freerdp_connection"><br><strong>rdp Login</strong><br><img src="https://i.imgur.com/zz4uEA2.png" alt="rdp Login"><br><strong>用RDP 進入內網A主機</strong><br><img src="https://i.imgur.com/wym4YOO.png" alt="RDP A"></p>
+<h2 id="arduinoinfo">參考資料</h2>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://newtoypia.blogspot.com/2016/08/reverse-ssh-tunneling.htm">鑿一個反向 ssh 隧道， 對朋友或世界展示筆電或家裡的某個服務</a></li>
+<li><a target="_blank" rel="noopener" href="https://ez3c.tw/2043">Reverse SSH Tunnel實際運用，搭配auotssh永不斷線，putty建立反向tunnel</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.creke.net/722.htm">SSH隧道與端口轉發及內網穿透</a></li>
 </ul>
 
     </div>
@@ -309,7 +306,9 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/Hexo/" rel="tag"># Hexo</a>
+              <a href="/tags/SSH/" rel="tag"># SSH</a>
+              <a href="/tags/%E8%B3%87%E5%AE%89/" rel="tag"># 資安</a>
+              <a href="/tags/Reverse-Tunnel/" rel="tag"># Reverse-Tunnel</a>
           </div>
 
         
@@ -318,10 +317,13 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/04/17/hello-world/" rel="prev" title="Hello World">
-      <i class="fa fa-chevron-left"></i> Hello World
+    <a href="/2018/10/13/base-Flask-template-app3/" rel="prev" title="基礎3：Flask Jinja2 模板引擎">
+      <i class="fa fa-chevron-left"></i> 基礎3：Flask Jinja2 模板引擎
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/17/hello-world/" rel="next" title="Hello World">
+      Hello World <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -380,7 +382,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Install-nvm"><span class="nav-number">1.</span> <span class="nav-text">Install nvm</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Install-node-by-nvm"><span class="nav-number">2.</span> <span class="nav-text">Install node by nvm</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Install-Hexo-by-npm"><span class="nav-number">3.</span> <span class="nav-text">Install  Hexo by npm</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#First-Hexo"><span class="nav-number">4.</span> <span class="nav-text">First Hexo</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B0%A1%E5%96%AE%E5%BB%BA%E7%AB%8B%E4%B8%80%E5%80%8BMyBlog"><span class="nav-number">4.1.</span> <span class="nav-text">簡單建立一個MyBlog</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E6%8F%9Btheme"><span class="nav-number">4.2.</span> <span class="nav-text">更換theme</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89RSS%E5%8A%9F%E8%83%BD"><span class="nav-number">4.3.</span> <span class="nav-text">有RSS功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%99%BC%E4%BD%88%E5%88%B0GitPage"><span class="nav-number">4.4.</span> <span class="nav-text">發佈到GitPage</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E8%B3%87%E6%96%99"><span class="nav-number">5.</span> <span class="nav-text">參考資料:</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8ssh-Reverse-Tunnel-%E7%AA%81%E7%A0%B4%E9%98%B2%E7%81%AB%E7%89%86%E6%88%96NAT%E9%99%90%E5%88%B6"><span class="nav-number">1.</span> <span class="nav-text">使用ssh Reverse Tunnel 突破防火牆或NAT限制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#depolymap"><span class="nav-number">1.1.</span> <span class="nav-text">架構圖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#background"><span class="nav-number">1.2.</span> <span class="nav-text">背景說明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stepbystep"><span class="nav-number">1.3.</span> <span class="nav-text">實作說明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC1%E6%AD%A5-%E5%85%88%E5%9C%A8A%E4%B8%BB%E6%A9%9F%E5%BB%BA%E7%AB%8B%E8%88%87B%E4%B8%BB%E6%A9%9F%E7%9A%84Reverse-Tunnel%E9%80%A3%E7%B7%9A"><span class="nav-number">1.3.1.</span> <span class="nav-text">第1步: 先在A主機建立與B主機的Reverse Tunnel連線</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC2%E6%AD%A5-%E5%BE%9EB%E4%B8%BB%E6%A9%9F%E9%80%A3%E7%B7%9A%E5%88%B0%E5%85%A7%E7%B6%B2A%E4%B8%BB%E6%A9%9F"><span class="nav-number">1.3.2.</span> <span class="nav-text">第2步: 從B主機連線到內網A主機</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#arduinoinfo"><span class="nav-number">1.4.</span> <span class="nav-text">參考資料</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
