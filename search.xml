@@ -1,6 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>使用ngrok突破防火牆或NAT限制</title>
+    <url>/2017/10/04/2017-10-04_ngrok/</url>
+    <content><![CDATA[<h1 id="使用ngrok突破防火牆或NAT限制"><a href="#使用ngrok突破防火牆或NAT限制" class="headerlink" title="使用ngrok突破防火牆或NAT限制"></a>使用ngrok突破防火牆或NAT限制</h1><ul>
+<li><a href="#depolymap">架構圖</a></li>
+<li><a href="#ngrokd">自建ngrok服務器</a></li>
+<li><a href="#ngrokdstart">在Server端啟動ngrokd-Linux</a></li>
+<li><a href="#ngrokstart">在Client端ngrok-Linux</a></li>
+<li><a href="#ngrokstartwin">在Client端ngrok-Windows</a></li>
+<li><a href="#arduinoinfo">參考資料</a><h2 id="depolymap">架構圖</h2>
+圖中遠端使用者若想連線到ClientAA,傳統作法在Router或防火牆上設定NAT之類的。現在ClientAA 先與 ngrokd伺服器建立一個通道,遠端使者就可以透過這個通道與ClientAA通訊。</li>
+</ul>
+<p><img src="https://i.imgur.com/xXxibn2.jpg" alt="ngrok架構圖"></p>
+<h2 id="ngrokd">自建ngrok服務器</h2>
+###  編譯 ngrokd (Server)  , ngrok (Client)
+- 下載 ngrok 原始碼
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cd &#x2F;usr&#x2F;src&#x2F;</span><br><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;inconshreveable&#x2F;ngrok</span><br></pre></td></tr></table></figure>
+- 使用openssl 建立 SSL 憑證(自簽)
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">openssl genrsa -out rootCA.key 2048</span><br><span class="line">openssl req -new -x509 -nodes -key rootCA.key -days 10000 -subj <span class="string">&quot;/CN=ngrok.aligogo.pw&quot;</span> -out rootCA.pem</span><br><span class="line">openssl genrsa -out server.key 2048</span><br><span class="line">openssl req -new -key server.key -subj <span class="string">&quot;/CN=ngrok.aligogo.pw&quot;</span> -out server.csr</span><br><span class="line">openssl x509 -req -<span class="keyword">in</span> server.csr -CA rootCA.pem -CAkey rootCA.key  -CAcreateserial -days 10000 -out server.crt</span><br></pre></td></tr></table></figure>
+- 分別複製 憑證及key到 此目錄下的server及client
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cp -p rootCA.pem   assets/client/tls/ngrokroot.crt</span><br><span class="line">cp -p server.key  assets/server/tls/snakeoil.key</span><br><span class="line">cp -p server.crt assets/server/tls/snakeoil.crt</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>編譯。 編譯完在 /usr/src/ngrok/bin/<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">make release-server</span><br><span class="line">make release-client</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意: 編譯 ARM 客戶端 (手機用)<br>GOOS=linux GOARCH=arm make release-client<br>編譯 Mac 客戶端 (Macbook用)<br>GOOS=darwin GOARCH=amd64 make release-client<br>編譯 windows 客戶端 (電腦用)<br>GOOS=windows GOARCH=amd64 make release-client<br>或是<br>GOOS=windows GOARCH=386  make release-client</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="ngrokdstart">在Server端BB 啟動(Centos6_x86_64)</h2>
+###  ngrokd
+- 啟動ngrokd。指定 httpAddr、httpsAddr 分別是 ngrok 用來轉發 http、https 服務的端口
+
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./ngrokd -domain=<span class="string">&quot;ngrok.aligogo.pw&quot;</span> -httpAddr=<span class="string">&quot;:8081&quot;</span> -httpsAddr=<span class="string">&quot;:8082&quot;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li> 另外,ngrokd 預設還會開一個 4443 port 用來跟客戶端通訊 (可以使用 此參數指定 -tunnelAddr=”:xxx”),<br>將 tcp 8081 ,8082 ,4443, 22222 加入防火牆</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">iptables -I INPUT 5 -p tcp --dport 4443 -j ACCEPT</span><br><span class="line">iptables -I INPUT 5 -p tcp --dport 8081 -j ACCEPT</span><br><span class="line">iptables -I INPUT 5 -p tcp --dport 8082 -j ACCEPT</span><br><span class="line">iptables -I INPUT 5 -p tcp --dport 22222 -j ACCEPT</span><br></pre></td></tr></table></figure>
+<h2 id="ngrokstart">在Client端 AA (Centos6_x86_64) 啟動ngrok去連接 ngrok.aligogo.pw:4443</h2>
+- 目標: 讓外部能連接內部 sshd
+- 在 Client AA 先確定是否有開啟 sshd
+
+<ul>
+<li>與 ngrok 同目錄建立 ngrok.cfg<br>(Server 防火牆要開 port (ex. 58800 (供RDP轉送)、22222 (供SSH轉送)))<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">server_addr:</span> <span class="string">&quot;ngrok.aligogo.pw:4443&quot;</span></span><br><span class="line"><span class="attr">trust_host_root_certs:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">tunnels:</span></span><br><span class="line">  <span class="attr">rdp:</span></span><br><span class="line">    <span class="attr">remote_port:</span> <span class="number">58800</span></span><br><span class="line">    <span class="attr">proto:</span></span><br><span class="line">      <span class="attr">tcp:</span> <span class="number">3389</span></span><br><span class="line">  <span class="attr">ssh:</span></span><br><span class="line">    <span class="attr">remote_port:</span> <span class="number">22222</span></span><br><span class="line">    <span class="attr">proto:</span></span><br><span class="line">      <span class="attr">tcp:</span> <span class="number">22</span></span><br></pre></td></tr></table></figure></li>
+<li>啟動 ngrok</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.&#x2F;ngrok  -config&#x3D;.&#x2F;ngrok.cfg start ssh</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>換顯示以下訊息</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ngrok                                                                                            (Ctrl+C to quit)</span><br><span class="line">                                                                                                                 </span><br><span class="line">Tunnel Status                 online                                                                             </span><br><span class="line">Version                       1.7&#x2F;1.7                                                                            </span><br><span class="line">Forwarding                    tcp:&#x2F;&#x2F;ngrok.aligogo.pw:22222 -&gt; 127.0.0.1:22                                       </span><br><span class="line">Web Interface                 127.0.0.1:4040                                                                     </span><br><span class="line"># Conn                        0                                                                                  </span><br><span class="line">Avg Conn Time                 0.00ms </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>遠端測試機 是否可以連接 Client 端 AA</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ssh -p 22222 ngrok.aligogo.pw</span><br></pre></td></tr></table></figure>
+
+<h2 id="ngrokstartwin">在Client端CC (Windows 2003) 啟動ngrok 去連接 ngrok.aligogo.pw:4443</h2>
+- 目標: 讓外部能連接內部  RDP 3389
+- 因為是 Windows ngrok 需要重新編譯
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">GOOS&#x3D;windows GOARCH&#x3D;386  make release-client  (for 32位元電腦)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">GOOS&#x3D;windows GOARCH&#x3D;amd64 make release-client (for 64位元電腦)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>與 ngrok 同目錄建立 ngrok.cfg<br>(Server 防火牆要開 22222 (供RDP轉送))</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">server_addr: &quot;ngrok.aligogo.pw:4443&quot;</span><br><span class="line">trust_host_root_certs: false</span><br><span class="line">tunnels:</span><br><span class="line">  rdp:</span><br><span class="line">    remote_port: 22222</span><br><span class="line">    proto:</span><br><span class="line">      tcp: 3389</span><br></pre></td></tr></table></figure></li>
+<li><p>啟動 ngrok</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ngrok.exe -config&#x3D;ngrok.cfg  start rdp</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="arduinoinfo">參考資料</h2>
+
+<ul>
+<li><a href="https://ngrok.com/docs#expose">ngrok官方</a></li>
+<li><a href="https://blog-gocreating.rhcloud.com/2015/04/24/ngrok-%E8%AE%93localhost%E7%84%A1%E7%B8%AB%E6%8E%A5%E8%BB%8Cinternet%E7%9A%84%E5%A5%BD%E5%B7%A5%E5%85%B7/">ngrok讓localhost無縫接軌internet的好工具</a></li>
+<li><a href="http://fu7771.blogspot.tw/2017/08/ngrok-server.html">自架 ngrok server (穿透內網)</a></li>
+<li><a href="https://github.com/inconshreveable/ngrok">ngrok-GitHub</a></li>
+<li><a href="https://imququ.com/post/self-hosted-ngrokd.html">搭建 ngrok 服務實現內網穿透</a></li>
+<li><a href="https://minecraft-zh.gamepedia.com/index.php?title=%E6%95%99%E7%A8%8B/%E4%BD%BF%E7%94%A8ngrok%E6%90%AD%E5%BB%BA%E6%9C%8D%E5%8A%A1%E5%99%A8&variant=zh-tw">教程/使用ngrok搭建伺服器</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>資安</tag>
+        <tag>Reverse-Tunnel</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Browser自動化測試工具Selenium</title>
+    <url>/2017/10/21/Browser%E8%87%AA%E5%8B%95%E5%8C%96%E6%B8%AC%E8%A9%A6%E5%B7%A5%E5%85%B7_Selenium_%E5%88%9D%E9%AB%94%E9%A9%97/</url>
+    <content><![CDATA[<h1 id="Browser自動化測試工具Selenium-Selenium-初體驗"><a href="#Browser自動化測試工具Selenium-Selenium-初體驗" class="headerlink" title="Browser自動化測試工具Selenium - Selenium 初體驗"></a>Browser自動化測試工具Selenium - Selenium 初體驗</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p> 前幾天與Software部門在進行測試網站某個功能性(每秒瀏灠一次網頁,共進行100次,查看第幾次開始得到http status code:403),因為我們部門長期都是使用Command-Line工作,因此為了方便用Shell Script簡單寫一個測試程式,測試結果與software部們不相同,了解之後,才知道他們是使用Browser 用手點方式測試。為了雙方測試環境一致性及客觀地顯示測試數據,本人有一個想法是否有支援程序化工具來控制Firefox或Chrome,經Google之後,很多網路上都推薦使用 <strong>Selenium</strong>,這項自動化測試工具。</p>
+<h2 id="建置selenium環境"><a href="#建置selenium環境" class="headerlink" title="建置selenium環境"></a>建置selenium環境</h2><ul>
+<li>這邊範例使用 Windows 系統(win7 或 Win10 都可)</li>
+<li>這邊範例使用Python語言,Windows 預設沒有安裝Python,<a href="https://www.python.org/downloads/release/python-363/">需要下載Python</a>,選擇對應平台(x86 或 x86_64),下載後,執行下一步下一步的安裝方式,這邊就不展示。</li>
+<li>開啟命令提示字元, 打上 py 或 python,有跑出類似以下畫面表示python 安裝成功。<br><img src="https://i.imgur.com/eQzPen8.png" alt="py_windows"></li>
+<li>安裝selenium。預設python 3 已有<strong>pip</strong>安裝python 第三方套件管理程式。<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">pip install selenium</span><br></pre></td></tr></table></figure></li>
+<li>分別下載Firefox及Chrome的webdriver,為了方便使用,下載完放置在c:\<ul>
+<li>Chrome的Webdriver <a href="https://sites.google.com/a/chromium.org/chromedriver/downloads%22target=%22_blank">ChromeDriver - WebDriver for Chrome</a></li>
+<li>Firefox的Webdriver <a href="https://github.com/mozilla/geckodriver/releases%22target=%22_blank">Mozilla_geckodriver</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="簡單執行自動執行Chrome"><a href="#簡單執行自動執行Chrome" class="headerlink" title="簡單執行自動執行Chrome"></a>簡單執行自動執行Chrome</h2><ul>
+<li>chromeDemo.py<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line">chrome_path=<span class="string">&quot;c:\chromedriver.exe&quot;</span></span><br><span class="line">web=webdriver.Chrome(chrome_path)</span><br><span class="line">web.set_window_position(<span class="number">0</span>,<span class="number">0</span>)</span><br><span class="line">web.set_window_size(<span class="number">700</span>,<span class="number">700</span>)</span><br><span class="line">web.get(<span class="string">&#x27;http://www.google.com&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(web.current_url)</span><br><span class="line">time.sleep(<span class="number">15</span>)</span><br><span class="line">web.close()</span><br></pre></td></tr></table></figure></li>
+<li>在命令提示字元 執行 chromeDemo.py<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">c:\&gt;py chromeDemo.py</span><br></pre></td></tr></table></figure>
+<h2 id="簡單執行自動執Firefox"><a href="#簡單執行自動執Firefox" class="headerlink" title="簡單執行自動執Firefox"></a>簡單執行自動執Firefox</h2></li>
+<li>firefoxdemo.py<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver</span><br><span class="line"><span class="keyword">from</span> selenium.webdriver.common.keys <span class="keyword">import</span> Keys</span><br><span class="line"><span class="keyword">from</span> selenium.webdriver.common.action_chains <span class="keyword">import</span> ActionChains</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line">Firefox_path=<span class="string">&quot;c:\geckodriver.exe&quot;</span></span><br><span class="line">web=webdriver.Firefox(executable_path=Firefox_path)</span><br><span class="line">web.set_window_position(<span class="number">0</span>,<span class="number">0</span>)</span><br><span class="line">web.set_window_size(<span class="number">700</span>,<span class="number">700</span>)</span><br><span class="line">ActionChains(web).key_down(Keys.F12).key_up(Keys.F12).perform()</span><br><span class="line">web.get(<span class="string">&#x27;http://www.google.com&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(web.current_url)</span><br><span class="line">time.sleep(<span class="number">15</span>)</span><br><span class="line">web.close()</span><br></pre></td></tr></table></figure></li>
+<li>在命令提示字元 執行 firefoxdemo.py<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">c:\&gt;py firefoxdemo.py</span><br></pre></td></tr></table></figure>
+<h2 id="範例-持續點擊某個網址"><a href="#範例-持續點擊某個網址" class="headerlink" title="範例 - 持續點擊某個網址"></a>範例 - 持續點擊某個網址</h2>以下使用chrome drive 來開啟Chrome Browser,並設定 Proxy相關設定(這邊我的內網有一台proxy： <a href="http://192.168.160.17:8082)之後,每隔1秒持續點擊">http://192.168.160.17:8082)之後,每隔1秒持續點擊</a> <a href="http://ifconfig.io/">ifconfig.io</a><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line">PROXY=<span class="string">&#x27;http://192.168.160.17:8082&#x27;</span></span><br><span class="line"></span><br><span class="line">webdriver.DesiredCapabilities.CHROME[<span class="string">&#x27;proxy&#x27;</span>]=&#123;</span><br><span class="line">    <span class="string">&quot;httpProxy&quot;</span>: PROXY,</span><br><span class="line">    <span class="string">&quot;ftpProxy&quot;</span>: PROXY,</span><br><span class="line">    <span class="string">&quot;sslProxy&quot;</span>: PROXY,</span><br><span class="line">    <span class="string">&quot;proxyType&quot;</span>: <span class="string">&quot;MANUAL&quot;</span>,</span><br><span class="line">&#125;</span><br><span class="line">chrome_path=<span class="string">&quot;./chromedriver.exe&quot;</span></span><br><span class="line"><span class="keyword">with</span> webdriver.Chrome(chrome_path) <span class="keyword">as</span> web:</span><br><span class="line">    web.set_window_position(<span class="number">0</span>,<span class="number">0</span>)</span><br><span class="line">    web.set_window_size(<span class="number">700</span>,<span class="number">700</span>)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">11</span>):</span><br><span class="line">      web.get(<span class="string">&#x27;http://ifconfig.io&#x27;</span>)</span><br><span class="line">      <span class="built_in">print</span>(<span class="string">&#x27;&#123;&#125;, URL: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(i,web.current_url))</span><br><span class="line">      time.sleep(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="影片展示自動執行Firefox及Chrome"><a href="#影片展示自動執行Firefox及Chrome" class="headerlink" title="影片展示自動執行Firefox及Chrome"></a>影片展示自動執行Firefox及Chrome</h2></li>
+<li><a href="http://goo.gl/27U9PC">for Firefox</a></li>
+<li><a href="http://goo.gl/r6i1V7">for Chrome</a><h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2></li>
+<li><a href="http://www.seleniumhq.org/">英文-SeleniumHQ-官方</a></li>
+<li><a href="https://www.selenium.dev/documentation/en/webdriver/http_proxies/">英文-Selenium_Http proxies</a></li>
+<li><a href="http://selenium-python-zh.readthedocs.io/en/latest/index.html">Selenium with Python中文翻譯文檔</a></li>
+<li><a href="http://blog.csdn.net/xie_0723/article/details/51437650">Python Selenium 常用方法總結</a></li>
+<li><a href="http://jialin128.pixnet.net/blog/post/114056630-%5Bpython%5D--%E4%BD%BF%E7%94%A8selenium%E5%9C%A8google-chrome%E7%80%8F%E8%A6%BD%E5%99%A8">[Python] 使用Selenium在Google Chrome瀏覽器</a></li>
+<li><a href="http://zwindr.blogspot.tw/2016/07/python-selenium.html">[Python] Selenium 教學 </a></li>
+<li><a href="http://risker0930.pixnet.net/blog/post/93522422-%E5%9C%A8chrome%E4%B8%8A%E9%9D%A2%E4%BD%BF%E7%94%A8selenium-webdriver">在Chrome上面使用Selenium WebDriver</a></li>
+<li><a href="http://pala.tw/python-web-crawler/">Python爬蟲新手筆記</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Selenium</tag>
+        <tag>Python</tag>
+        <tag>爬蟲</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>First Hexo</title>
     <url>/2021/04/17/First-Hexo/</url>
     <content><![CDATA[<h2 id="Install-nvm"><a href="#Install-nvm" class="headerlink" title="Install nvm"></a>Install nvm</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash</span><br><span class="line"><span class="built_in">command</span> -v nvm</span><br><span class="line"><span class="built_in">which</span> nvm</span><br><span class="line">nvm ls</span><br><span class="line">nvm current</span><br></pre></td></tr></table></figure>
@@ -60,6 +192,34 @@
       </tags>
   </entry>
   <entry>
+    <title>Python-Simple-parallel</title>
+    <url>/2018/04/01/Python-Simple-parallel/</url>
+    <content><![CDATA[<h2 id="Python-multiprocessing"><a href="#Python-multiprocessing" class="headerlink" title="Python - multiprocessing"></a>Python - multiprocessing</h2><p>大部分程式都是由上到下依序執行,若一個程式花費需要5秒,批示執行8次,理論是應該須40秒時間。現在CPU都是多核心,假設有一個8 core的CPU,將執行8次花費5秒的程式,分配到每個核心並行執行,理論上應該只要5秒就可完成工作。Python 標準函式庫 就有 multiprocessing 可達到此目的。</p>
+<h2 id="Python-Demo-1"><a href="#Python-Demo-1" class="headerlink" title="Python Demo 1"></a>Python Demo 1</h2><p>1.ping 5次 (循序方式,於雙核CPU) ;測出約8秒</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def job1(url):</span><br><span class="line">    tmpstr&#x3D;&quot;ping -c 5  &quot;+str(url)</span><br><span class="line">    os.system(tmpstr)</span><br><span class="line"></span><br><span class="line">if __name__&#x3D;&#x3D;&#39;__main__&#39;:</span><br><span class="line">    job1(&quot;8.8.8.8&quot;)</span><br><span class="line">    job1(&quot;8.8.4.4&quot;)</span><br></pre></td></tr></table></figure>
+
+
+<p>2.ping 5次 (<strong>並行方式</strong>,於雙核CPU);測出約4秒</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">import multiprocessing as mp</span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def job1(url):</span><br><span class="line">    tmpstr&#x3D;&quot;ping -c 5  &quot;+str(url)</span><br><span class="line">    os.system(tmpstr)</span><br><span class="line"></span><br><span class="line">if __name__&#x3D;&#x3D;&#39;__main__&#39;:</span><br><span class="line">    p1&#x3D;mp.Process(target&#x3D;job1,args&#x3D;(&quot;8.8.8.8&quot;,))</span><br><span class="line">    p1.start()</span><br><span class="line">    p2&#x3D;mp.Process(target&#x3D;job1,args&#x3D;(&quot;8.8.4.4&quot;,))</span><br><span class="line">    p2.start()</span><br></pre></td></tr></table></figure>
+
+<h2 id="Python-Demo-2-另一種Pool寫法"><a href="#Python-Demo-2-另一種Pool寫法" class="headerlink" title="Python Demo 2 ,另一種Pool寫法"></a>Python Demo 2 ,另一種Pool寫法</h2><p>1.一個工作睡3秒,執行5次。(循序方式,於雙核CPU) ;測出約15秒</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">from multiprocessing import Pool</span><br><span class="line">from time import sleep</span><br><span class="line"></span><br><span class="line">def task(argss):</span><br><span class="line">    print(str(argss) +&quot; start ... sleep&quot;)</span><br><span class="line">    sleep(3)</span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    for i in range(5):</span><br><span class="line">        task(i)</span><br></pre></td></tr></table></figure>
+
+<p>2.一個工作睡3秒,執行5次。(<strong>並行方式</strong>,於雙核CPU) ;測出約9秒</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python</span><br><span class="line">from multiprocessing import Pool</span><br><span class="line">from time import sleep</span><br><span class="line">                                                                                                                                    </span><br><span class="line">def task(argss):</span><br><span class="line">    print(str(argss) +&quot; start ... sleep&quot;)</span><br><span class="line">    sleep(3)</span><br><span class="line">    </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    p&#x3D;Pool(2)</span><br><span class="line">    for i in range(5):</span><br><span class="line">        p.apply_async(task, args&#x3D;(i,))</span><br><span class="line">        </span><br><span class="line">    print(&#39;Waiting for all subprocesses..&#39;)</span><br><span class="line">    p.close()</span><br><span class="line">    p.join()</span><br><span class="line">    print(&#39;All Subprocess done ..&#39;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2><ul>
+<li><a href="https://docs.python.org.tw/3/library/multiprocessing.html#module-multiprocessing">Python標準庫_multiprocessing</a></li>
+<li><a href="filesystem:chrome-extension://oegnpmiddfljlloiklpkeelagaeejfai/temporary/9c5cbb04-be0a-4f65-b4c5-61b9bd7cd4c6/1487326368864_729/index.htm">Multiprocessing with Python</a></li>
+<li><a href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431927781401bb47ccf187b24c3b955157bb12c5882d000">廖雪峰-多進程</a></li>
+<li><a href="http://www.cnblogs.com/vamei/archive/2012/10/12/2721484.html#">Python標準庫10 多進程初步 (multiprocessing包)</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>SSh-Reverse-Tunnel-RDP</title>
     <url>/2019/01/20/SSh-Reverse-Tunnel-RDP/</url>
     <content><![CDATA[<h1 id="使用ssh-Reverse-Tunnel-突破防火牆或NAT限制"><a href="#使用ssh-Reverse-Tunnel-突破防火牆或NAT限制" class="headerlink" title="使用ssh Reverse Tunnel 突破防火牆或NAT限制"></a>使用ssh Reverse Tunnel 突破防火牆或NAT限制</h1><ul>
@@ -100,9 +260,9 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>SSH</tag>
         <tag>資安</tag>
         <tag>Reverse-Tunnel</tag>
+        <tag>SSH</tag>
       </tags>
   </entry>
   <entry>
@@ -130,8 +290,8 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Flask</tag>
         <tag>Python</tag>
+        <tag>Flask</tag>
       </tags>
   </entry>
   <entry>
@@ -157,8 +317,8 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Flask</tag>
         <tag>Python</tag>
+        <tag>Flask</tag>
       </tags>
   </entry>
   <entry>
@@ -215,8 +375,8 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Flask</tag>
         <tag>Python</tag>
+        <tag>Flask</tag>
       </tags>
   </entry>
   <entry>
@@ -268,8 +428,8 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Flask</tag>
         <tag>Python</tag>
+        <tag>Flask</tag>
       </tags>
   </entry>
   <entry>
@@ -289,74 +449,5 @@
 
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
-  </entry>
-  <entry>
-    <title>Python-Simple-parallel</title>
-    <url>/2018/04/01/Python-Simple-parallel/</url>
-    <content><![CDATA[<h2 id="Python-multiprocessing"><a href="#Python-multiprocessing" class="headerlink" title="Python - multiprocessing"></a>Python - multiprocessing</h2><p>大部分程式都是由上到下依序執行,若一個程式花費需要5秒,批示執行8次,理論是應該須40秒時間。現在CPU都是多核心,假設有一個8 core的CPU,將執行8次花費5秒的程式,分配到每個核心並行執行,理論上應該只要5秒就可完成工作。Python 標準函式庫 就有 multiprocessing 可達到此目的。</p>
-<h2 id="Python-Demo-1"><a href="#Python-Demo-1" class="headerlink" title="Python Demo 1"></a>Python Demo 1</h2><p>1.ping 5次 (循序方式,於雙核CPU) ;測出約8秒</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def job1(url):</span><br><span class="line">    tmpstr&#x3D;&quot;ping -c 5  &quot;+str(url)</span><br><span class="line">    os.system(tmpstr)</span><br><span class="line"></span><br><span class="line">if __name__&#x3D;&#x3D;&#39;__main__&#39;:</span><br><span class="line">    job1(&quot;8.8.8.8&quot;)</span><br><span class="line">    job1(&quot;8.8.4.4&quot;)</span><br></pre></td></tr></table></figure>
-
-
-<p>2.ping 5次 (<strong>並行方式</strong>,於雙核CPU);測出約4秒</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">import multiprocessing as mp</span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def job1(url):</span><br><span class="line">    tmpstr&#x3D;&quot;ping -c 5  &quot;+str(url)</span><br><span class="line">    os.system(tmpstr)</span><br><span class="line"></span><br><span class="line">if __name__&#x3D;&#x3D;&#39;__main__&#39;:</span><br><span class="line">    p1&#x3D;mp.Process(target&#x3D;job1,args&#x3D;(&quot;8.8.8.8&quot;,))</span><br><span class="line">    p1.start()</span><br><span class="line">    p2&#x3D;mp.Process(target&#x3D;job1,args&#x3D;(&quot;8.8.4.4&quot;,))</span><br><span class="line">    p2.start()</span><br></pre></td></tr></table></figure>
-
-<h2 id="Python-Demo-2-另一種Pool寫法"><a href="#Python-Demo-2-另一種Pool寫法" class="headerlink" title="Python Demo 2 ,另一種Pool寫法"></a>Python Demo 2 ,另一種Pool寫法</h2><p>1.一個工作睡3秒,執行5次。(循序方式,於雙核CPU) ;測出約15秒</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">from multiprocessing import Pool</span><br><span class="line">from time import sleep</span><br><span class="line"></span><br><span class="line">def task(argss):</span><br><span class="line">    print(str(argss) +&quot; start ... sleep&quot;)</span><br><span class="line">    sleep(3)</span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    for i in range(5):</span><br><span class="line">        task(i)</span><br></pre></td></tr></table></figure>
-
-<p>2.一個工作睡3秒,執行5次。(<strong>並行方式</strong>,於雙核CPU) ;測出約9秒</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python</span><br><span class="line">from multiprocessing import Pool</span><br><span class="line">from time import sleep</span><br><span class="line">                                                                                                                                    </span><br><span class="line">def task(argss):</span><br><span class="line">    print(str(argss) +&quot; start ... sleep&quot;)</span><br><span class="line">    sleep(3)</span><br><span class="line">    </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    p&#x3D;Pool(2)</span><br><span class="line">    for i in range(5):</span><br><span class="line">        p.apply_async(task, args&#x3D;(i,))</span><br><span class="line">        </span><br><span class="line">    print(&#39;Waiting for all subprocesses..&#39;)</span><br><span class="line">    p.close()</span><br><span class="line">    p.join()</span><br><span class="line">    print(&#39;All Subprocess done ..&#39;)</span><br></pre></td></tr></table></figure>
-
-<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2><ul>
-<li><a href="https://docs.python.org.tw/3/library/multiprocessing.html#module-multiprocessing">Python標準庫_multiprocessing</a></li>
-<li><a href="filesystem:chrome-extension://oegnpmiddfljlloiklpkeelagaeejfai/temporary/9c5cbb04-be0a-4f65-b4c5-61b9bd7cd4c6/1487326368864_729/index.htm">Multiprocessing with Python</a></li>
-<li><a href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431927781401bb47ccf187b24c3b955157bb12c5882d000">廖雪峰-多進程</a></li>
-<li><a href="http://www.cnblogs.com/vamei/archive/2012/10/12/2721484.html#">Python標準庫10 多進程初步 (multiprocessing包)</a></li>
-</ul>
-]]></content>
-      <tags>
-        <tag>Python</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Browser自動化測試工具Selenium</title>
-    <url>/2017/10/21/Browser%E8%87%AA%E5%8B%95%E5%8C%96%E6%B8%AC%E8%A9%A6%E5%B7%A5%E5%85%B7_Selenium_%E5%88%9D%E9%AB%94%E9%A9%97/</url>
-    <content><![CDATA[<h1 id="Browser自動化測試工具Selenium-Selenium-初體驗"><a href="#Browser自動化測試工具Selenium-Selenium-初體驗" class="headerlink" title="Browser自動化測試工具Selenium - Selenium 初體驗"></a>Browser自動化測試工具Selenium - Selenium 初體驗</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p> 前幾天與Software部門在進行測試網站某個功能性(每秒瀏灠一次網頁,共進行100次,查看第幾次開始得到http status code:403),因為我們部門長期都是使用Command-Line工作,因此為了方便用Shell Script簡單寫一個測試程式,測試結果與software部們不相同,了解之後,才知道他們是使用Browser 用手點方式測試。為了雙方測試環境一致性及客觀地顯示測試數據,本人有一個想法是否有支援程序化工具來控制Firefox或Chrome,經Google之後,很多網路上都推薦使用 <strong>Selenium</strong>,這項自動化測試工具。</p>
-<h2 id="建置selenium環境"><a href="#建置selenium環境" class="headerlink" title="建置selenium環境"></a>建置selenium環境</h2><ul>
-<li>這邊範例使用 Windows 系統(win7 或 Win10 都可)</li>
-<li>這邊範例使用Python語言,Windows 預設沒有安裝Python,<a href="https://www.python.org/downloads/release/python-363/">需要下載Python</a>,選擇對應平台(x86 或 x86_64),下載後,執行下一步下一步的安裝方式,這邊就不展示。</li>
-<li>開啟命令提示字元, 打上 py 或 python,有跑出類似以下畫面表示python 安裝成功。<br><img src="https://i.imgur.com/eQzPen8.png" alt="py_windows"></li>
-<li>安裝selenium。預設python 3 已有<strong>pip</strong>安裝python 第三方套件管理程式。<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">pip install selenium</span><br></pre></td></tr></table></figure></li>
-<li>分別下載Firefox及Chrome的webdriver,為了方便使用,下載完放置在c:\<ul>
-<li>Chrome的Webdriver <a href="https://sites.google.com/a/chromium.org/chromedriver/downloads%22target=%22_blank">ChromeDriver - WebDriver for Chrome</a></li>
-<li>Firefox的Webdriver <a href="https://github.com/mozilla/geckodriver/releases%22target=%22_blank">Mozilla_geckodriver</a></li>
-</ul>
-</li>
-</ul>
-<h2 id="簡單執行自動執行Chrome"><a href="#簡單執行自動執行Chrome" class="headerlink" title="簡單執行自動執行Chrome"></a>簡單執行自動執行Chrome</h2><ul>
-<li>chromeDemo.py<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line">chrome_path=<span class="string">&quot;c:\chromedriver.exe&quot;</span></span><br><span class="line">web=webdriver.Chrome(chrome_path)</span><br><span class="line">web.set_window_position(<span class="number">0</span>,<span class="number">0</span>)</span><br><span class="line">web.set_window_size(<span class="number">700</span>,<span class="number">700</span>)</span><br><span class="line">web.get(<span class="string">&#x27;http://www.google.com&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(web.current_url)</span><br><span class="line">time.sleep(<span class="number">15</span>)</span><br><span class="line">web.close()</span><br></pre></td></tr></table></figure></li>
-<li>在命令提示字元 執行 chromeDemo.py<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">c:\&gt;py chromeDemo.py</span><br></pre></td></tr></table></figure>
-<h2 id="簡單執行自動執Firefox"><a href="#簡單執行自動執Firefox" class="headerlink" title="簡單執行自動執Firefox"></a>簡單執行自動執Firefox</h2></li>
-<li>firefoxdemo.py<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver</span><br><span class="line"><span class="keyword">from</span> selenium.webdriver.common.keys <span class="keyword">import</span> Keys</span><br><span class="line"><span class="keyword">from</span> selenium.webdriver.common.action_chains <span class="keyword">import</span> ActionChains</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line">Firefox_path=<span class="string">&quot;c:\geckodriver.exe&quot;</span></span><br><span class="line">web=webdriver.Firefox(executable_path=Firefox_path)</span><br><span class="line">web.set_window_position(<span class="number">0</span>,<span class="number">0</span>)</span><br><span class="line">web.set_window_size(<span class="number">700</span>,<span class="number">700</span>)</span><br><span class="line">ActionChains(web).key_down(Keys.F12).key_up(Keys.F12).perform()</span><br><span class="line">web.get(<span class="string">&#x27;http://www.google.com&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(web.current_url)</span><br><span class="line">time.sleep(<span class="number">15</span>)</span><br><span class="line">web.close()</span><br></pre></td></tr></table></figure></li>
-<li>在命令提示字元 執行 firefoxdemo.py<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">c:\&gt;py firefoxdemo.py</span><br></pre></td></tr></table></figure>
-<h2 id="範例-持續點擊某個網址"><a href="#範例-持續點擊某個網址" class="headerlink" title="範例 - 持續點擊某個網址"></a>範例 - 持續點擊某個網址</h2>以下使用chrome drive 來開啟Chrome Browser,並設定 Proxy相關設定(這邊我的內網有一台proxy： <a href="http://192.168.160.17:8082)之後,每隔1秒持續點擊">http://192.168.160.17:8082)之後,每隔1秒持續點擊</a> <a href="http://ifconfig.io/">ifconfig.io</a><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line">PROXY=<span class="string">&#x27;http://192.168.160.17:8082&#x27;</span></span><br><span class="line"></span><br><span class="line">webdriver.DesiredCapabilities.CHROME[<span class="string">&#x27;proxy&#x27;</span>]=&#123;</span><br><span class="line">    <span class="string">&quot;httpProxy&quot;</span>: PROXY,</span><br><span class="line">    <span class="string">&quot;ftpProxy&quot;</span>: PROXY,</span><br><span class="line">    <span class="string">&quot;sslProxy&quot;</span>: PROXY,</span><br><span class="line">    <span class="string">&quot;proxyType&quot;</span>: <span class="string">&quot;MANUAL&quot;</span>,</span><br><span class="line">&#125;</span><br><span class="line">chrome_path=<span class="string">&quot;./chromedriver.exe&quot;</span></span><br><span class="line"><span class="keyword">with</span> webdriver.Chrome(chrome_path) <span class="keyword">as</span> web:</span><br><span class="line">    web.set_window_position(<span class="number">0</span>,<span class="number">0</span>)</span><br><span class="line">    web.set_window_size(<span class="number">700</span>,<span class="number">700</span>)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">11</span>):</span><br><span class="line">      web.get(<span class="string">&#x27;http://ifconfig.io&#x27;</span>)</span><br><span class="line">      <span class="built_in">print</span>(<span class="string">&#x27;&#123;&#125;, URL: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(i,web.current_url))</span><br><span class="line">      time.sleep(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
-<h2 id="影片展示自動執行Firefox及Chrome"><a href="#影片展示自動執行Firefox及Chrome" class="headerlink" title="影片展示自動執行Firefox及Chrome"></a>影片展示自動執行Firefox及Chrome</h2></li>
-<li><a href="http://goo.gl/27U9PC">for Firefox</a></li>
-<li><a href="http://goo.gl/r6i1V7">for Chrome</a><h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2></li>
-<li><a href="http://www.seleniumhq.org/">英文-SeleniumHQ-官方</a></li>
-<li><a href="https://www.selenium.dev/documentation/en/webdriver/http_proxies/">英文-Selenium_Http proxies</a></li>
-<li><a href="http://selenium-python-zh.readthedocs.io/en/latest/index.html">Selenium with Python中文翻譯文檔</a></li>
-<li><a href="http://blog.csdn.net/xie_0723/article/details/51437650">Python Selenium 常用方法總結</a></li>
-<li><a href="http://jialin128.pixnet.net/blog/post/114056630-%5Bpython%5D--%E4%BD%BF%E7%94%A8selenium%E5%9C%A8google-chrome%E7%80%8F%E8%A6%BD%E5%99%A8">[Python] 使用Selenium在Google Chrome瀏覽器</a></li>
-<li><a href="http://zwindr.blogspot.tw/2016/07/python-selenium.html">[Python] Selenium 教學 </a></li>
-<li><a href="http://risker0930.pixnet.net/blog/post/93522422-%E5%9C%A8chrome%E4%B8%8A%E9%9D%A2%E4%BD%BF%E7%94%A8selenium-webdriver">在Chrome上面使用Selenium WebDriver</a></li>
-<li><a href="http://pala.tw/python-web-crawler/">Python爬蟲新手筆記</a></li>
-</ul>
-]]></content>
-      <tags>
-        <tag>Python</tag>
-        <tag>Selenium</tag>
-        <tag>爬蟲</tag>
-      </tags>
   </entry>
 </search>

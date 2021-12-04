@@ -76,11 +76,11 @@
     
     
     
-    <category term="SSH" scheme="http://example.com/tags/SSH/"/>
-    
     <category term="資安" scheme="http://example.com/tags/%E8%B3%87%E5%AE%89/"/>
     
     <category term="Reverse-Tunnel" scheme="http://example.com/tags/Reverse-Tunnel/"/>
+    
+    <category term="SSH" scheme="http://example.com/tags/SSH/"/>
     
   </entry>
   
@@ -102,9 +102,9 @@
     
     
     
-    <category term="Flask" scheme="http://example.com/tags/Flask/"/>
-    
     <category term="Python" scheme="http://example.com/tags/Python/"/>
+    
+    <category term="Flask" scheme="http://example.com/tags/Flask/"/>
     
   </entry>
   
@@ -126,9 +126,9 @@
     
     
     
-    <category term="Flask" scheme="http://example.com/tags/Flask/"/>
-    
     <category term="Python" scheme="http://example.com/tags/Python/"/>
+    
+    <category term="Flask" scheme="http://example.com/tags/Flask/"/>
     
   </entry>
   
@@ -150,9 +150,9 @@
     
     
     
-    <category term="Flask" scheme="http://example.com/tags/Flask/"/>
-    
     <category term="Python" scheme="http://example.com/tags/Python/"/>
+    
+    <category term="Flask" scheme="http://example.com/tags/Flask/"/>
     
   </entry>
   
@@ -196,9 +196,9 @@
     
     
     
-    <category term="Flask" scheme="http://example.com/tags/Flask/"/>
-    
     <category term="Python" scheme="http://example.com/tags/Python/"/>
+    
+    <category term="Flask" scheme="http://example.com/tags/Flask/"/>
     
   </entry>
   
@@ -220,11 +220,36 @@
     
     
     
-    <category term="Python" scheme="http://example.com/tags/Python/"/>
-    
     <category term="Selenium" scheme="http://example.com/tags/Selenium/"/>
     
+    <category term="Python" scheme="http://example.com/tags/Python/"/>
+    
     <category term="爬蟲" scheme="http://example.com/tags/%E7%88%AC%E8%9F%B2/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>使用ngrok突破防火牆或NAT限制</title>
+    <link href="http://example.com/2017/10/04/2017-10-04_ngrok/"/>
+    <id>http://example.com/2017/10/04/2017-10-04_ngrok/</id>
+    <published>2017-10-03T16:00:00.000Z</published>
+    <updated>2021-12-04T10:22:56.598Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="使用ngrok突破防火牆或NAT限制"><a href="#使用ngrok突破防火牆或NAT限制" class="headerlink" title="使用ngrok突破防火牆或NAT限制"></a>使用ngrok突破防火牆或NAT限制</h1><ul><li><a href="#depolymap">架構圖</a></li><li><a href="#ngrokd">自建ngrok服務器</a></li><li><a href="#ngrokdstart">在Server端啟動ngrokd-Linux</a></li><li><a href="#ngrokstart">在Client端ngrok-Linux</a></li><li><a href="#ngrokstartwin">在Client端ngrok-Windows</a></li><li><a href="#arduinoinfo">參考資料</a><h2 id="depolymap">架構圖</h2>圖中遠端使用者若想連線到ClientAA,傳統作法在Router或防火牆上設定NAT之類的。現在ClientAA 先與 ngrokd伺服器建立一個通道,遠端使者就可以透過這個通道與ClientAA通訊。</li></ul><p><img src="https://i.imgur.com/xXxibn2.jpg" alt="ngrok架構圖"></p><h2 id="ngrokd">自建ngrok服務器</h2>###  編譯 ngrokd (Server)  , ngrok (Client)- 下載 ngrok 原始碼<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;usr&#x2F;src&#x2F;</span><br><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;inconshreveable&#x2F;ngrok</span><br></pre></td></tr></table></figure>- 使用openssl 建立 SSL 憑證(自簽)<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out rootCA.key 2048</span><br><span class="line">openssl req -new -x509 -nodes -key rootCA.key -days 10000 -subj <span class="string">&quot;/CN=ngrok.aligogo.pw&quot;</span> -out rootCA.pem</span><br><span class="line">openssl genrsa -out server.key 2048</span><br><span class="line">openssl req -new -key server.key -subj <span class="string">&quot;/CN=ngrok.aligogo.pw&quot;</span> -out server.csr</span><br><span class="line">openssl x509 -req -<span class="keyword">in</span> server.csr -CA rootCA.pem -CAkey rootCA.key  -CAcreateserial -days 10000 -out server.crt</span><br></pre></td></tr></table></figure>- 分別複製 憑證及key到 此目錄下的server及client<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cp -p rootCA.pem   assets/client/tls/ngrokroot.crt</span><br><span class="line">cp -p server.key  assets/server/tls/snakeoil.key</span><br><span class="line">cp -p server.crt assets/server/tls/snakeoil.crt</span><br></pre></td></tr></table></figure><ul><li>編譯。 編譯完在 /usr/src/ngrok/bin/<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make release-server</span><br><span class="line">make release-client</span><br></pre></td></tr></table></figure><blockquote><p>注意: 編譯 ARM 客戶端 (手機用)<br>GOOS=linux GOARCH=arm make release-client<br>編譯 Mac 客戶端 (Macbook用)<br>GOOS=darwin GOARCH=amd64 make release-client<br>編譯 windows 客戶端 (電腦用)<br>GOOS=windows GOARCH=amd64 make release-client<br>或是<br>GOOS=windows GOARCH=386  make release-client</p></blockquote></li></ul><h2 id="ngrokdstart">在Server端BB 啟動(Centos6_x86_64)</h2>###  ngrokd- 啟動ngrokd。指定 httpAddr、httpsAddr 分別是 ngrok 用來轉發 http、https 服務的端口<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./ngrokd -domain=<span class="string">&quot;ngrok.aligogo.pw&quot;</span> -httpAddr=<span class="string">&quot;:8081&quot;</span> -httpsAddr=<span class="string">&quot;:8082&quot;</span></span><br></pre></td></tr></table></figure><ul><li> 另外,ngrokd 預設還會開一個 4443 port 用來跟客戶端通訊 (可以使用 此參數指定 -tunnelAddr=”:xxx”),<br>將 tcp 8081 ,8082 ,4443, 22222 加入防火牆</li></ul><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">iptables -I INPUT 5 -p tcp --dport 4443 -j ACCEPT</span><br><span class="line">iptables -I INPUT 5 -p tcp --dport 8081 -j ACCEPT</span><br><span class="line">iptables -I INPUT 5 -p tcp --dport 8082 -j ACCEPT</span><br><span class="line">iptables -I INPUT 5 -p tcp --dport 22222 -j ACCEPT</span><br></pre></td></tr></table></figure><h2 id="ngrokstart">在Client端 AA (Centos6_x86_64) 啟動ngrok去連接 ngrok.aligogo.pw:4443</h2>- 目標: 讓外部能連接內部 sshd- 在 Client AA 先確定是否有開啟 sshd<ul><li>與 ngrok 同目錄建立 ngrok.cfg<br>(Server 防火牆要開 port (ex. 58800 (供RDP轉送)、22222 (供SSH轉送)))<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">server_addr:</span> <span class="string">&quot;ngrok.aligogo.pw:4443&quot;</span></span><br><span class="line"><span class="attr">trust_host_root_certs:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">tunnels:</span></span><br><span class="line">  <span class="attr">rdp:</span></span><br><span class="line">    <span class="attr">remote_port:</span> <span class="number">58800</span></span><br><span class="line">    <span class="attr">proto:</span></span><br><span class="line">      <span class="attr">tcp:</span> <span class="number">3389</span></span><br><span class="line">  <span class="attr">ssh:</span></span><br><span class="line">    <span class="attr">remote_port:</span> <span class="number">22222</span></span><br><span class="line">    <span class="attr">proto:</span></span><br><span class="line">      <span class="attr">tcp:</span> <span class="number">22</span></span><br></pre></td></tr></table></figure></li><li>啟動 ngrok</li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;ngrok  -config&#x3D;.&#x2F;ngrok.cfg start ssh</span><br></pre></td></tr></table></figure><ul><li>換顯示以下訊息</li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ngrok                                                                                            (Ctrl+C to quit)</span><br><span class="line">                                                                                                                 </span><br><span class="line">Tunnel Status                 online                                                                             </span><br><span class="line">Version                       1.7&#x2F;1.7                                                                            </span><br><span class="line">Forwarding                    tcp:&#x2F;&#x2F;ngrok.aligogo.pw:22222 -&gt; 127.0.0.1:22                                       </span><br><span class="line">Web Interface                 127.0.0.1:4040                                                                     </span><br><span class="line"># Conn                        0                                                                                  </span><br><span class="line">Avg Conn Time                 0.00ms </span><br></pre></td></tr></table></figure><ul><li>遠端測試機 是否可以連接 Client 端 AA</li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -p 22222 ngrok.aligogo.pw</span><br></pre></td></tr></table></figure><h2 id="ngrokstartwin">在Client端CC (Windows 2003) 啟動ngrok 去連接 ngrok.aligogo.pw:4443</h2>- 目標: 讓外部能連接內部  RDP 3389- 因為是 Windows ngrok 需要重新編譯<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GOOS&#x3D;windows GOARCH&#x3D;386  make release-client  (for 32位元電腦)</span><br></pre></td></tr></table></figure><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GOOS&#x3D;windows GOARCH&#x3D;amd64 make release-client (for 64位元電腦)</span><br></pre></td></tr></table></figure><ul><li><p>與 ngrok 同目錄建立 ngrok.cfg<br>(Server 防火牆要開 22222 (供RDP轉送))</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">server_addr: &quot;ngrok.aligogo.pw:4443&quot;</span><br><span class="line">trust_host_root_certs: false</span><br><span class="line">tunnels:</span><br><span class="line">  rdp:</span><br><span class="line">    remote_port: 22222</span><br><span class="line">    proto:</span><br><span class="line">      tcp: 3389</span><br></pre></td></tr></table></figure></li><li><p>啟動 ngrok</p></li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ngrok.exe -config&#x3D;ngrok.cfg  start rdp</span><br></pre></td></tr></table></figure><h2 id="arduinoinfo">參考資料</h2><ul><li><a href="https://ngrok.com/docs#expose">ngrok官方</a></li><li><a href="https://blog-gocreating.rhcloud.com/2015/04/24/ngrok-%E8%AE%93localhost%E7%84%A1%E7%B8%AB%E6%8E%A5%E8%BB%8Cinternet%E7%9A%84%E5%A5%BD%E5%B7%A5%E5%85%B7/">ngrok讓localhost無縫接軌internet的好工具</a></li><li><a href="http://fu7771.blogspot.tw/2017/08/ngrok-server.html">自架 ngrok server (穿透內網)</a></li><li><a href="https://github.com/inconshreveable/ngrok">ngrok-GitHub</a></li><li><a href="https://imququ.com/post/self-hosted-ngrokd.html">搭建 ngrok 服務實現內網穿透</a></li><li><a href="https://minecraft-zh.gamepedia.com/index.php?title=%E6%95%99%E7%A8%8B/%E4%BD%BF%E7%94%A8ngrok%E6%90%AD%E5%BB%BA%E6%9C%8D%E5%8A%A1%E5%99%A8&variant=zh-tw">教程/使用ngrok搭建伺服器</a></li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;使用ngrok突破防火牆或NAT限制&quot;&gt;&lt;a href=&quot;#使用ngrok突破防火牆或NAT限制&quot; class=&quot;headerlink&quot; title=&quot;使用ngrok突破防火牆或NAT限制&quot;&gt;&lt;/a&gt;使用ngrok突破防火牆或NAT限制&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;</summary>
+      
+    
+    
+    
+    
+    <category term="資安" scheme="http://example.com/tags/%E8%B3%87%E5%AE%89/"/>
+    
+    <category term="Reverse-Tunnel" scheme="http://example.com/tags/Reverse-Tunnel/"/>
     
   </entry>
   

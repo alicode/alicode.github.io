@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="使用ngrok突破防火牆或NAT限制 架構圖 自建ngrok服務器 在Server端啟動ngrokd-Linux 在Client端ngrok-Linux 在Client端ngrok-Windows 參考資料架構圖 圖中遠端使用者若想連線到ClientAA,傳統作法在Router或防火牆上設定NAT之類的。現在ClientAA 先與 ngrokd伺服器建立一個通道,遠端使者就可以透過這個通道與Cli">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用ngrok突破防火牆或NAT限制">
+<meta property="og:url" content="http://example.com/2017/10/04/2017-10-04_ngrok/index.html">
+<meta property="og:site_name" content="阿里發發電腦筆記">
+<meta property="og:description" content="使用ngrok突破防火牆或NAT限制 架構圖 自建ngrok服務器 在Server端啟動ngrokd-Linux 在Client端ngrok-Linux 在Client端ngrok-Windows 參考資料架構圖 圖中遠端使用者若想連線到ClientAA,傳統作法在Router或防火牆上設定NAT之類的。現在ClientAA 先與 ngrokd伺服器建立一個通道,遠端使者就可以透過這個通道與Cli">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://i.imgur.com/xXxibn2.jpg">
+<meta property="article:published_time" content="2017-10-03T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-04T10:22:56.598Z">
+<meta property="article:author" content="Alicode">
+<meta property="article:tag" content="資安">
+<meta property="article:tag" content="Reverse-Tunnel">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/xXxibn2.jpg">
+
+<link rel="canonical" href="http://example.com/2017/10/04/2017-10-04_ngrok/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>使用ngrok突破防火牆或NAT限制 | 阿里發發電腦筆記</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="阿里發發電腦筆記" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">阿里發發電腦筆記</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Alibaba Wiki - 菩薩球球</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜尋
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜尋..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/10/04/2017-10-04_ngrok/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用ngrok突破防火牆或NAT限制
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2017-10-04 00:00:00" itemprop="dateCreated datePublished" datetime="2017-10-04T00:00:00+08:00">2017-10-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-04 18:22:56" itemprop="dateModified" datetime="2021-12-04T18:22:56+08:00">2021-12-04</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="使用ngrok突破防火牆或NAT限制"><a href="#使用ngrok突破防火牆或NAT限制" class="headerlink" title="使用ngrok突破防火牆或NAT限制"></a>使用ngrok突破防火牆或NAT限制</h1><ul>
+<li><a href="#depolymap">架構圖</a></li>
+<li><a href="#ngrokd">自建ngrok服務器</a></li>
+<li><a href="#ngrokdstart">在Server端啟動ngrokd-Linux</a></li>
+<li><a href="#ngrokstart">在Client端ngrok-Linux</a></li>
+<li><a href="#ngrokstartwin">在Client端ngrok-Windows</a></li>
+<li><a href="#arduinoinfo">參考資料</a><h2 id="depolymap">架構圖</h2>
+圖中遠端使用者若想連線到ClientAA,傳統作法在Router或防火牆上設定NAT之類的。現在ClientAA 先與 ngrokd伺服器建立一個通道,遠端使者就可以透過這個通道與ClientAA通訊。</li>
+</ul>
+<p><img src="https://i.imgur.com/xXxibn2.jpg" alt="ngrok架構圖"></p>
+<h2 id="ngrokd">自建ngrok服務器</h2>
+###  編譯 ngrokd (Server)  , ngrok (Client)
+- 下載 ngrok 原始碼
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;usr&#x2F;src&#x2F;</span><br><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;inconshreveable&#x2F;ngrok</span><br></pre></td></tr></table></figure>
+- 使用openssl 建立 SSL 憑證(自簽)
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out rootCA.key 2048</span><br><span class="line">openssl req -new -x509 -nodes -key rootCA.key -days 10000 -subj <span class="string">&quot;/CN=ngrok.aligogo.pw&quot;</span> -out rootCA.pem</span><br><span class="line">openssl genrsa -out server.key 2048</span><br><span class="line">openssl req -new -key server.key -subj <span class="string">&quot;/CN=ngrok.aligogo.pw&quot;</span> -out server.csr</span><br><span class="line">openssl x509 -req -<span class="keyword">in</span> server.csr -CA rootCA.pem -CAkey rootCA.key  -CAcreateserial -days 10000 -out server.crt</span><br></pre></td></tr></table></figure>
+- 分別複製 憑證及key到 此目錄下的server及client
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cp -p rootCA.pem   assets/client/tls/ngrokroot.crt</span><br><span class="line">cp -p server.key  assets/server/tls/snakeoil.key</span><br><span class="line">cp -p server.crt assets/server/tls/snakeoil.crt</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>編譯。 編譯完在 /usr/src/ngrok/bin/<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make release-server</span><br><span class="line">make release-client</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意: 編譯 ARM 客戶端 (手機用)<br>GOOS=linux GOARCH=arm make release-client<br>編譯 Mac 客戶端 (Macbook用)<br>GOOS=darwin GOARCH=amd64 make release-client<br>編譯 windows 客戶端 (電腦用)<br>GOOS=windows GOARCH=amd64 make release-client<br>或是<br>GOOS=windows GOARCH=386  make release-client</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="ngrokdstart">在Server端BB 啟動(Centos6_x86_64)</h2>
+###  ngrokd
+- 啟動ngrokd。指定 httpAddr、httpsAddr 分別是 ngrok 用來轉發 http、https 服務的端口
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./ngrokd -domain=<span class="string">&quot;ngrok.aligogo.pw&quot;</span> -httpAddr=<span class="string">&quot;:8081&quot;</span> -httpsAddr=<span class="string">&quot;:8082&quot;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li> 另外,ngrokd 預設還會開一個 4443 port 用來跟客戶端通訊 (可以使用 此參數指定 -tunnelAddr=”:xxx”),<br>將 tcp 8081 ,8082 ,4443, 22222 加入防火牆</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">iptables -I INPUT 5 -p tcp --dport 4443 -j ACCEPT</span><br><span class="line">iptables -I INPUT 5 -p tcp --dport 8081 -j ACCEPT</span><br><span class="line">iptables -I INPUT 5 -p tcp --dport 8082 -j ACCEPT</span><br><span class="line">iptables -I INPUT 5 -p tcp --dport 22222 -j ACCEPT</span><br></pre></td></tr></table></figure>
+<h2 id="ngrokstart">在Client端 AA (Centos6_x86_64) 啟動ngrok去連接 ngrok.aligogo.pw:4443</h2>
+- 目標: 讓外部能連接內部 sshd
+- 在 Client AA 先確定是否有開啟 sshd
+
+<ul>
+<li>與 ngrok 同目錄建立 ngrok.cfg<br>(Server 防火牆要開 port (ex. 58800 (供RDP轉送)、22222 (供SSH轉送)))<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">server_addr:</span> <span class="string">&quot;ngrok.aligogo.pw:4443&quot;</span></span><br><span class="line"><span class="attr">trust_host_root_certs:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">tunnels:</span></span><br><span class="line">  <span class="attr">rdp:</span></span><br><span class="line">    <span class="attr">remote_port:</span> <span class="number">58800</span></span><br><span class="line">    <span class="attr">proto:</span></span><br><span class="line">      <span class="attr">tcp:</span> <span class="number">3389</span></span><br><span class="line">  <span class="attr">ssh:</span></span><br><span class="line">    <span class="attr">remote_port:</span> <span class="number">22222</span></span><br><span class="line">    <span class="attr">proto:</span></span><br><span class="line">      <span class="attr">tcp:</span> <span class="number">22</span></span><br></pre></td></tr></table></figure></li>
+<li>啟動 ngrok</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;ngrok  -config&#x3D;.&#x2F;ngrok.cfg start ssh</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>換顯示以下訊息</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ngrok                                                                                            (Ctrl+C to quit)</span><br><span class="line">                                                                                                                 </span><br><span class="line">Tunnel Status                 online                                                                             </span><br><span class="line">Version                       1.7&#x2F;1.7                                                                            </span><br><span class="line">Forwarding                    tcp:&#x2F;&#x2F;ngrok.aligogo.pw:22222 -&gt; 127.0.0.1:22                                       </span><br><span class="line">Web Interface                 127.0.0.1:4040                                                                     </span><br><span class="line"># Conn                        0                                                                                  </span><br><span class="line">Avg Conn Time                 0.00ms </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>遠端測試機 是否可以連接 Client 端 AA</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -p 22222 ngrok.aligogo.pw</span><br></pre></td></tr></table></figure>
+
+<h2 id="ngrokstartwin">在Client端CC (Windows 2003) 啟動ngrok 去連接 ngrok.aligogo.pw:4443</h2>
+- 目標: 讓外部能連接內部  RDP 3389
+- 因為是 Windows ngrok 需要重新編譯
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GOOS&#x3D;windows GOARCH&#x3D;386  make release-client  (for 32位元電腦)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GOOS&#x3D;windows GOARCH&#x3D;amd64 make release-client (for 64位元電腦)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>與 ngrok 同目錄建立 ngrok.cfg<br>(Server 防火牆要開 22222 (供RDP轉送))</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">server_addr: &quot;ngrok.aligogo.pw:4443&quot;</span><br><span class="line">trust_host_root_certs: false</span><br><span class="line">tunnels:</span><br><span class="line">  rdp:</span><br><span class="line">    remote_port: 22222</span><br><span class="line">    proto:</span><br><span class="line">      tcp: 3389</span><br></pre></td></tr></table></figure></li>
+<li><p>啟動 ngrok</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ngrok.exe -config&#x3D;ngrok.cfg  start rdp</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="arduinoinfo">參考資料</h2>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://ngrok.com/docs#expose">ngrok官方</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog-gocreating.rhcloud.com/2015/04/24/ngrok-%E8%AE%93localhost%E7%84%A1%E7%B8%AB%E6%8E%A5%E8%BB%8Cinternet%E7%9A%84%E5%A5%BD%E5%B7%A5%E5%85%B7/">ngrok讓localhost無縫接軌internet的好工具</a></li>
+<li><a target="_blank" rel="noopener" href="http://fu7771.blogspot.tw/2017/08/ngrok-server.html">自架 ngrok server (穿透內網)</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/inconshreveable/ngrok">ngrok-GitHub</a></li>
+<li><a target="_blank" rel="noopener" href="https://imququ.com/post/self-hosted-ngrokd.html">搭建 ngrok 服務實現內網穿透</a></li>
+<li><a target="_blank" rel="noopener" href="https://minecraft-zh.gamepedia.com/index.php?title=%E6%95%99%E7%A8%8B/%E4%BD%BF%E7%94%A8ngrok%E6%90%AD%E5%BB%BA%E6%9C%8D%E5%8A%A1%E5%99%A8&variant=zh-tw">教程/使用ngrok搭建伺服器</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>歡迎關注我的其它發布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%B3%87%E5%AE%89/" rel="tag"># 資安</a>
+              <a href="/tags/Reverse-Tunnel/" rel="tag"># Reverse-Tunnel</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2017/10/21/Browser%E8%87%AA%E5%8B%95%E5%8C%96%E6%B8%AC%E8%A9%A6%E5%B7%A5%E5%85%B7_Selenium_%E5%88%9D%E9%AB%94%E9%A9%97/" rel="next" title="Browser自動化測試工具Selenium">
+      Browser自動化測試工具Selenium <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8ngrok%E7%AA%81%E7%A0%B4%E9%98%B2%E7%81%AB%E7%89%86%E6%88%96NAT%E9%99%90%E5%88%B6"><span class="nav-number">1.</span> <span class="nav-text">使用ngrok突破防火牆或NAT限制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#depolymap"><span class="nav-number">1.1.</span> <span class="nav-text">架構圖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ngrokd"><span class="nav-number">1.2.</span> <span class="nav-text">自建ngrok服務器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ngrokdstart"><span class="nav-number">1.3.</span> <span class="nav-text">在Server端BB 啟動(Centos6_x86_64)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ngrokstart"><span class="nav-number">1.4.</span> <span class="nav-text">在Client端 AA (Centos6_x86_64) 啟動ngrok去連接 ngrok.aligogo.pw:4443</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ngrokstartwin"><span class="nav-number">1.5.</span> <span class="nav-text">在Client端CC (Windows 2003) 啟動ngrok 去連接 ngrok.aligogo.pw:4443</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#arduinoinfo"><span class="nav-number">1.6.</span> <span class="nav-text">參考資料</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Alicode</p>
+  <div class="site-description" itemprop="description">因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alicode</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>
