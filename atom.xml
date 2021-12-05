@@ -220,9 +220,9 @@
     
     
     
-    <category term="Python" scheme="http://example.com/tags/Python/"/>
-    
     <category term="Selenium" scheme="http://example.com/tags/Selenium/"/>
+    
+    <category term="Python" scheme="http://example.com/tags/Python/"/>
     
     <category term="爬蟲" scheme="http://example.com/tags/%E7%88%AC%E8%9F%B2/"/>
     
@@ -250,6 +250,29 @@
     <category term="資安" scheme="http://example.com/tags/%E8%B3%87%E5%AE%89/"/>
     
     <category term="Reverse-Tunnel" scheme="http://example.com/tags/Reverse-Tunnel/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Cache-Only DNS Server</title>
+    <link href="http://example.com/2017/09/16/2017-09-16_Cache-Only-DNS-Server/"/>
+    <id>http://example.com/2017/09/16/2017-09-16_Cache-Only-DNS-Server/</id>
+    <published>2017-09-15T16:00:00.000Z</published>
+    <updated>2021-12-05T10:15:37.381Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="單純做cache-Only-DNS"><a href="#單純做cache-Only-DNS" class="headerlink" title="單純做cache-Only DNS"></a>單純做cache-Only DNS</h1><ul><li><a href="#pretalk">前言</a></li><li><a href="#dns_lab">LAB架構圖</a> </li><li><a href="#dns_config">DNS設定檔</a></li><li><a href="#dns_boot">DNS啟動</a></li><li><a href="#dns_dig">DNS測試</a></li><li><a href="#dns_info">參考資料</a><h2 id="pretalk">前言</h2>將查詢轉送到外部DNS查詢(例如:Google:8.8.8.8;中華電信:168.95.1.1),查詢回來的結果再cache一份在自己的DNS。</li></ul><h2 id="dns_lab">LAB架構圖</h2><p><img src="https://i.imgur.com/QrtHf9P.png" alt="cache-only_Architecture"></p><h2 id="dns_config">DNS設定檔</h2><ul><li>主設定檔: /etc/named.conf (主要是紅框的部分)<br><img src="https://i.imgur.com/WlP77GB.png" alt="cache-only"></li></ul><h2 id="dns_boot">DNS啟動</h2>- /etc/init.d/named start<h2 id="dns_dig">DNS測試</h2>- 正解測試:  - dig -t a www.google.com @127.0.0.1<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">; &lt;&lt;&gt;&gt; DiG 9.8.2rc1-RedHat-9.8.2-0.62.rc1.el6_9.4 &lt;&lt;&gt;&gt; -t a www.google.com @127.0.0.1</span><br><span class="line">;; global options: +cmd</span><br><span class="line">;; Got answer:</span><br><span class="line">;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 25098</span><br><span class="line">;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0</span><br><span class="line"></span><br><span class="line">;; QUESTION SECTION:</span><br><span class="line">;www.google.com.INA</span><br><span class="line"></span><br><span class="line">;; ANSWER SECTION:</span><br><span class="line">www.google.com.82INA216.58.200.228</span><br><span class="line"></span><br><span class="line">;; Query time: 82 msec</span><br><span class="line">;; SERVER: 127.0.0.1#53(127.0.0.1)</span><br><span class="line">;; MSG SIZE  rcvd: 48</span><br></pre></td></tr></table></figure><h2 id="dns_info">參考資料</h2><ul><li><a href="https://dns-security.twnic.net.tw/">TWNIC 2017網安實務教育訓練-DNS設定與除錯</a></li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;單純做cache-Only-DNS&quot;&gt;&lt;a href=&quot;#單純做cache-Only-DNS&quot; class=&quot;headerlink&quot; title=&quot;單純做cache-Only DNS&quot;&gt;&lt;/a&gt;單純做cache-Only DNS&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a h</summary>
+      
+    
+    
+    
+    
+    <category term="DNS" scheme="http://example.com/tags/DNS/"/>
     
   </entry>
   

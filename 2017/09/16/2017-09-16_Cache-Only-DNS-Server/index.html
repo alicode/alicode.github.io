@@ -20,18 +20,23 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
-<meta property="og:type" content="website">
-<meta property="og:title" content="阿里發發電腦筆記">
-<meta property="og:url" content="http://example.com/tags/%E7%88%AC%E8%9F%B2/index.html">
+  <meta name="description" content="單純做cache-Only DNS 前言 LAB架構圖  DNS設定檔 DNS啟動 DNS測試 參考資料前言 將查詢轉送到外部DNS查詢(例如:Google:8.8.8.8;中華電信:168.95.1.1),查詢回來的結果再cache一份在自己的DNS。  LAB架構圖   DNS設定檔   主設定檔: &#x2F;etc&#x2F;named.conf (主要是紅框的部分)  DNS啟動 - &#x2F;etc&#x2F;init.d">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cache-Only DNS Server">
+<meta property="og:url" content="http://example.com/2017/09/16/2017-09-16_Cache-Only-DNS-Server/index.html">
 <meta property="og:site_name" content="阿里發發電腦筆記">
-<meta property="og:description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+<meta property="og:description" content="單純做cache-Only DNS 前言 LAB架構圖  DNS設定檔 DNS啟動 DNS測試 參考資料前言 將查詢轉送到外部DNS查詢(例如:Google:8.8.8.8;中華電信:168.95.1.1),查詢回來的結果再cache一份在自己的DNS。  LAB架構圖   DNS設定檔   主設定檔: &#x2F;etc&#x2F;named.conf (主要是紅框的部分)  DNS啟動 - &#x2F;etc&#x2F;init.d">
 <meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://i.imgur.com/QrtHf9P.png">
+<meta property="og:image" content="https://i.imgur.com/WlP77GB.png">
+<meta property="article:published_time" content="2017-09-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-05T10:15:37.381Z">
 <meta property="article:author" content="Alicode">
-<meta property="article:tag" content="Linux,bash , Python ,nodejs">
+<meta property="article:tag" content="DNS">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/QrtHf9P.png">
 
-<link rel="canonical" href="http://example.com/tags/%E7%88%AC%E8%9F%B2/">
+<link rel="canonical" href="http://example.com/2017/09/16/2017-09-16_Cache-Only-DNS-Server/">
 
 
 <script id="page-configurations">
@@ -39,12 +44,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'zh-TW'
   };
 </script>
 
-  <title>標籤: 爬蟲 | 阿里發發電腦筆記</title>
+  <title>Cache-Only DNS Server | 阿里發發電腦筆記</title>
   
 
 
@@ -177,51 +182,135 @@
         <div class="content-wrap">
           
 
-          <div class="content tag">
+          <div class="content post posts-expand">
             
 
+    
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <h2 class="collection-header">爬蟲
-          <small>標籤</small>
-        </h2>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/09/16/2017-09-16_Cache-Only-DNS-Server/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Cache-Only DNS Server
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2017-09-16 00:00:00" itemprop="dateCreated datePublished" datetime="2017-09-16T00:00:00+08:00">2017-09-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-05 18:15:37" itemprop="dateModified" datetime="2021-12-05T18:15:37+08:00">2021-12-05</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <span class="collection-header">2017</span>
+        <h1 id="單純做cache-Only-DNS"><a href="#單純做cache-Only-DNS" class="headerlink" title="單純做cache-Only DNS"></a>單純做cache-Only DNS</h1><ul>
+<li><a href="#pretalk">前言</a></li>
+<li><a href="#dns_lab">LAB架構圖</a> </li>
+<li><a href="#dns_config">DNS設定檔</a></li>
+<li><a href="#dns_boot">DNS啟動</a></li>
+<li><a href="#dns_dig">DNS測試</a></li>
+<li><a href="#dns_info">參考資料</a><h2 id="pretalk">前言</h2>
+將查詢轉送到外部DNS查詢(例如:Google:8.8.8.8;中華電信:168.95.1.1),查詢回來的結果再cache一份在自己的DNS。</li>
+</ul>
+<h2 id="dns_lab">LAB架構圖</h2>
+
+<p><img src="https://i.imgur.com/QrtHf9P.png" alt="cache-only_Architecture"></p>
+<h2 id="dns_config">DNS設定檔</h2>
+
+<ul>
+<li>主設定檔: /etc/named.conf (主要是紅框的部分)<br><img src="https://i.imgur.com/WlP77GB.png" alt="cache-only"></li>
+</ul>
+<h2 id="dns_boot">DNS啟動</h2>
+- /etc/init.d/named start
+<h2 id="dns_dig">DNS測試</h2>
+- 正解測試:
+  - dig -t a www.google.com @127.0.0.1
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">; &lt;&lt;&gt;&gt; DiG 9.8.2rc1-RedHat-9.8.2-0.62.rc1.el6_9.4 &lt;&lt;&gt;&gt; -t a www.google.com @127.0.0.1</span><br><span class="line">;; global options: +cmd</span><br><span class="line">;; Got answer:</span><br><span class="line">;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 25098</span><br><span class="line">;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0</span><br><span class="line"></span><br><span class="line">;; QUESTION SECTION:</span><br><span class="line">;www.google.com.			IN	A</span><br><span class="line"></span><br><span class="line">;; ANSWER SECTION:</span><br><span class="line">www.google.com.		82	IN	A	216.58.200.228</span><br><span class="line"></span><br><span class="line">;; Query time: 82 msec</span><br><span class="line">;; SERVER: 127.0.0.1#53(127.0.0.1)</span><br><span class="line">;; MSG SIZE  rcvd: 48</span><br></pre></td></tr></table></figure>
+<h2 id="dns_info">參考資料</h2>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://dns-security.twnic.net.tw/">TWNIC 2017網安實務教育訓練-DNS設定與除錯</a></li>
+</ul>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
+        
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2017-10-21T00:00:00+08:00"
-              content="2017-10-21">
-          10-21
-        </time>
-      </div>
+  <div class="followme">
+    <p>歡迎關注我的其它發布渠道</p>
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2017/10/21/Browser%E8%87%AA%E5%8B%95%E5%8C%96%E6%B8%AC%E8%A9%A6%E5%B7%A5%E5%85%B7_Selenium_%E5%88%9D%E9%AB%94%E9%A9%97/" itemprop="url">
-            <span itemprop="name">Browser自動化測試工具Selenium</span>
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
           </a>
-      </div>
-
-    </header>
-  </article>
-
+        </div>
     </div>
   </div>
-  
-  
-  
 
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/DNS/" rel="tag"># DNS</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/03/12/2017-03-12_Nginx-Location-Matching/" rel="prev" title="Nginx location  匹配原則">
+      <i class="fa fa-chevron-left"></i> Nginx location  匹配原則
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/10/04/2017-10-04_ngrok/" rel="next" title="使用ngrok突破防火牆或NAT限制">
+      使用ngrok突破防火牆或NAT限制 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
   
 
 
@@ -274,6 +363,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%96%AE%E7%B4%94%E5%81%9Acache-Only-DNS"><span class="nav-number">1.</span> <span class="nav-text">單純做cache-Only DNS</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#pretalk"><span class="nav-number">1.1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dns_lab"><span class="nav-number">1.2.</span> <span class="nav-text">LAB架構圖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dns_config"><span class="nav-number">1.3.</span> <span class="nav-text">DNS設定檔</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dns_boot"><span class="nav-number">1.4.</span> <span class="nav-text">DNS啟動</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dns_dig"><span class="nav-number">1.5.</span> <span class="nav-text">DNS測試</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dns_info"><span class="nav-number">1.6.</span> <span class="nav-text">參考資料</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
