@@ -1,6 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Nginx location  匹配原則</title>
+    <url>/2017/03/12/2017-03-12_Nginx-Location-Matching/</url>
+    <content><![CDATA[<h1 id="Nginx-location-匹配原則"><a href="#Nginx-location-匹配原則" class="headerlink" title="Nginx location  匹配原則"></a>Nginx location  匹配原則</h1><h2 id="語法格式"><a href="#語法格式" class="headerlink" title="語法格式"></a>語法格式</h2><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">http&#123;</span><br><span class="line">...</span><br><span class="line">    server&#123;</span><br><span class="line">         location  [ &#x3D; | ~ | ~* | ^~ | @ ] &#x2F;uri&#x2F; &#123;</span><br><span class="line">         ......</span><br><span class="line">         &#125;</span><br><span class="line">    &#125;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="location-優先順序比對原則-重要"><a href="#location-優先順序比對原則-重要" class="headerlink" title="location 優先順序比對原則 (重要!!!)"></a>location 優先順序比對原則 (重要!!!)</h2><ul>
+<li>“=” &gt; “^<del>“ &gt; “</del>“ &gt; “/uri/“   &gt; “/“  (location 的 前綴)</li>
+<li>其中 “=” , “^~” , “@”  和  /uri/ (無任何前綴) 都是屬於 一般 location(也就是文字字串)</li>
+<li>其中  ~  , ~*  是屬於 正規表示法的 location</li>
+<li>location <strong>會先匹配文字字串 ,再匹配正規表示法</strong></li>
+<li>文字字串 以匹配<strong>最長字串為原則</strong>, 文字字串沒有位置的先後順序。</li>
+<li>正規表示法 有先後順序</li>
+</ul>
+<h3 id="“-”"><a href="#“-”" class="headerlink" title="“=”"></a>“=”</h3><ul>
+<li>嚴格精確比對</li>
+<li>匹配之後, 即終止後面的location 比對</li>
+<li>文字字串比對</li>
+</ul>
+<h3 id="“-”-1"><a href="#“-”-1" class="headerlink" title="“^~”"></a>“^~”</h3><ul>
+<li>文字字串比對</li>
+<li>匹配之後, 即終止後面的location 比對,其實還有另一種含意 (^ 表示「非」，~ 表示「正規表示法」，字符意思是：不要繼續匹配正規表示法)</li>
+<li>區分大小寫</li>
+<li>不會做URL encode</li>
+</ul>
+<h3 id="“-”-2"><a href="#“-”-2" class="headerlink" title="“~”"></a>“~”</h3><ul>
+<li>正規表示法比對</li>
+<li>區分大小寫</li>
+</ul>
+<h3 id="“-”-3"><a href="#“-”-3" class="headerlink" title="“~*”"></a>“~*”</h3><ul>
+<li>正規表示法比對</li>
+<li>不區分大小寫</li>
+</ul>
+<h2 id="location-LAB-實踐演練說明"><a href="#location-LAB-實踐演練說明" class="headerlink" title="location LAB 實踐演練說明"></a>location LAB 實踐演練說明</h2><h3 id="“-“-““-優先順序"><a href="#“-“-““-優先順序" class="headerlink" title="“^“   ““   優先順序"></a>“^<del>“   “</del>“   優先順序</h3><ul>
+<li>Nginx 設定檔<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       80;</span><br><span class="line">    server_name  localhost 172.17.0.*;</span><br><span class="line">    root &#x2F;var&#x2F;www&#x2F;html;</span><br><span class="line">    access_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;localhost-access.log  main;</span><br><span class="line">    error_log   &#x2F;var&#x2F;log&#x2F;nginx&#x2F;localhost-error.log;</span><br><span class="line"></span><br><span class="line">    location ~ &#x2F;test&#x2F; &#123;</span><br><span class="line">        echo &quot;A&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    location ^~ &#x2F;test &#123;</span><br><span class="line">        echo &quot;B&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li> 測試及說明<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl 172.17.0.2&#x2F;test&#x2F;    &#x3D;&#x3D;&gt; 會return  B</span><br><span class="line">按照location 匹配原則;先執行文字字串的比對,再比對正規表示法。</span><br><span class="line">這邊找到 &quot;^~&quot; 比對文字字串,因 &quot;^~&quot; 特性比對到,就終止後面 正規表示法的比對。</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="“-”-“-“-““-優先順序"><a href="#“-”-“-“-““-優先順序" class="headerlink" title="“=”  “^“  ““  優先順序"></a>“=”  “^<del>“  “</del>“  優先順序</h3><ul>
+<li>Nginx 設定檔<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">server&#123;</span><br><span class="line">...</span><br><span class="line">    location ~ &#x2F;test&#x2F; &#123;</span><br><span class="line">        echo &quot;A&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    location ^~ &#x2F;test &#123;</span><br><span class="line">        echo &quot;B&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    location  &#x3D;&#x2F;test&#123;</span><br><span class="line">        echo  &quot;C&quot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li>測試和說明<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl 172.17.0.2&#x2F;test&#x2F;  &#x3D;&#x3D;&gt; return C</span><br><span class="line">按照location 匹配原則;這邊找到 &quot;&#x3D;&quot; 比對文字字串,因 &quot;&#x3D;&quot; 精確比對到,就終止後面 正規表示法的比對。</span><br></pre></td></tr></table></figure>
+<h3 id="“-”-正規表示法-有位置執行順序"><a href="#“-”-正規表示法-有位置執行順序" class="headerlink" title="“~”  正規表示法 有位置執行順序"></a>“~”  正規表示法 有位置執行順序</h3></li>
+<li>Nginx 設定檔<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">....</span><br><span class="line">    location ~ ^&#x2F;test&#x2F;.*\.(html|htm|jpg|gif)$ &#123;</span><br><span class="line">        echo &quot;A&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">    location ~ ^&#x2F;test&#x2F;.*\.(html|htm|jpg|gif|png)$ &#123;</span><br><span class="line">        echo &quot;B&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>測試及說明<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl 172.17.0.2&#x2F;test&#x2F;123.html   &#x3D;&#x3D;&gt; A</span><br><span class="line">這邊找不到文字字串比對,再以正規表示法比對, 第一筆location 比對到就終止後面正規表示法的執行。</span><br><span class="line"></span><br><span class="line">curl 172.17.0.2&#x2F;test&#x2F;123.jpg   &#x3D;&#x3D;&gt; A</span><br><span class="line">這邊找不到文字字串比對,再以正規表示法比對, 第一筆location 比對到就終止後面正規表示法的執行。</span><br><span class="line"></span><br><span class="line">curl 172.17.0.2&#x2F;test&#x2F;123.png  &#x3D;&#x3D;&gt; B</span><br><span class="line">這邊找不到文字字串比對,再以正規表示法比對, 第一筆location 沒有比對到,再繼續 第二筆正規表示法的比對,比對到就終止後面正規表示法的執行。</span><br></pre></td></tr></table></figure>
+<h3 id="uri-優先順序"><a href="#uri-優先順序" class="headerlink" title="/uri/  ~ 優先順序"></a>/uri/  ~ 優先順序</h3></li>
+<li>nginx 設定檔<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">....</span><br><span class="line">   location    &#x2F;test&#x2F;123.png &#123;</span><br><span class="line">        echo &quot;C&quot;;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   location ~ ^&#x2F;test&#x2F;.*\.(html|htm|jpg|gif)$ &#123;</span><br><span class="line">        echo &quot;Test A&quot;;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   location ~ \.(html|png)$ &#123;</span><br><span class="line">        echo &quot;B&quot;;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   location ~ ^&#x2F;test&#x2F;.*\.(html|htm|jpg|gif|png)$ &#123;</span><br><span class="line">        echo &quot;Test B&quot;;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>測試及說明<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl http:&#x2F;&#x2F;172.17.0.2&#x2F;test&#x2F;123.png  &#x3D;&#x3D;&#x3D;&gt;  B</span><br><span class="line">以文字字串比對 匹配到 第一筆location ,再以 正規表示法比對 匹配第三筆 location ,就終止後面的比對。</span><br><span class="line"></span><br><span class="line">若將第三筆 location mark 起來 &quot;#location ~ \.(html|png)$&quot; 測試看看; curl http:&#x2F;&#x2F;172.17.0.2&#x2F;test&#x2F;123.png &#x3D;&#x3D;&gt; Test B</span><br><span class="line">以文字字串比對 匹配到 第一筆location ,再以 正規表示法比對 匹配第四筆location,就終止後面的比對。</span><br><span class="line"></span><br><span class="line">將剛才mark 第三筆 location拿掉。測試 </span><br><span class="line">curl http:&#x2F;&#x2F;172.17.0.2&#x2F;123.html  &#x3D;&#x3D;&gt; B</span><br><span class="line"> 以文字字串比對 沒匹配到,再以 正規表示法比對匹配第三筆 location ,就終止後面的比對。</span><br><span class="line"></span><br><span class="line">curl http:&#x2F;&#x2F;172.17.0.2&#x2F;test&#x2F;123.html  &#x3D;&#x3D;&gt; Test A</span><br><span class="line">以文字字串比對,沒匹配到,再以正規表示法比對,匹配第二筆 location,就終止後面的比對。</span><br></pre></td></tr></table></figure>
+<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料:"></a>參考資料:</h2></li>
+<li><a href="http://nginx.org/en/docs/http/ngx_http_core_module.html#location">官網 NGINX- location</a></li>
+<li><a href="http://freehat.blog.51cto.com/1239536/1610902">51Cto - nginx location 規則優先級</a></li>
+<li><a href="http://eyesmore.iteye.com/blog/1141660">Nginx 關於 location 的匹配規則詳解</a></li>
+<li><a href="https://smalltowntechblog.com/2014/10/25/nginx-location-regex%E7%AD%86%E8%A8%98/">Nginx Location REGEX 比對語法和設定</a></li>
+<li><a href="http://seanlook.com/2015/05/17/nginx-location-rewrite/">nginx配置location總結及rewrite規則寫法 </a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>NGINX</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>使用ngrok突破防火牆或NAT限制</title>
     <url>/2017/10/04/2017-10-04_ngrok/</url>
     <content><![CDATA[<h1 id="使用ngrok突破防火牆或NAT限制"><a href="#使用ngrok突破防火牆或NAT限制" class="headerlink" title="使用ngrok突破防火牆或NAT限制"></a>使用ngrok突破防火牆或NAT限制</h1><ul>
@@ -92,6 +149,34 @@
       </tags>
   </entry>
   <entry>
+    <title>Python-Simple-parallel</title>
+    <url>/2018/04/01/Python-Simple-parallel/</url>
+    <content><![CDATA[<h2 id="Python-multiprocessing"><a href="#Python-multiprocessing" class="headerlink" title="Python - multiprocessing"></a>Python - multiprocessing</h2><p>大部分程式都是由上到下依序執行,若一個程式花費需要5秒,批示執行8次,理論是應該須40秒時間。現在CPU都是多核心,假設有一個8 core的CPU,將執行8次花費5秒的程式,分配到每個核心並行執行,理論上應該只要5秒就可完成工作。Python 標準函式庫 就有 multiprocessing 可達到此目的。</p>
+<h2 id="Python-Demo-1"><a href="#Python-Demo-1" class="headerlink" title="Python Demo 1"></a>Python Demo 1</h2><p>1.ping 5次 (循序方式,於雙核CPU) ;測出約8秒</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def job1(url):</span><br><span class="line">    tmpstr&#x3D;&quot;ping -c 5  &quot;+str(url)</span><br><span class="line">    os.system(tmpstr)</span><br><span class="line"></span><br><span class="line">if __name__&#x3D;&#x3D;&#39;__main__&#39;:</span><br><span class="line">    job1(&quot;8.8.8.8&quot;)</span><br><span class="line">    job1(&quot;8.8.4.4&quot;)</span><br></pre></td></tr></table></figure>
+
+
+<p>2.ping 5次 (<strong>並行方式</strong>,於雙核CPU);測出約4秒</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">import multiprocessing as mp</span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def job1(url):</span><br><span class="line">    tmpstr&#x3D;&quot;ping -c 5  &quot;+str(url)</span><br><span class="line">    os.system(tmpstr)</span><br><span class="line"></span><br><span class="line">if __name__&#x3D;&#x3D;&#39;__main__&#39;:</span><br><span class="line">    p1&#x3D;mp.Process(target&#x3D;job1,args&#x3D;(&quot;8.8.8.8&quot;,))</span><br><span class="line">    p1.start()</span><br><span class="line">    p2&#x3D;mp.Process(target&#x3D;job1,args&#x3D;(&quot;8.8.4.4&quot;,))</span><br><span class="line">    p2.start()</span><br></pre></td></tr></table></figure>
+
+<h2 id="Python-Demo-2-另一種Pool寫法"><a href="#Python-Demo-2-另一種Pool寫法" class="headerlink" title="Python Demo 2 ,另一種Pool寫法"></a>Python Demo 2 ,另一種Pool寫法</h2><p>1.一個工作睡3秒,執行5次。(循序方式,於雙核CPU) ;測出約15秒</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">from multiprocessing import Pool</span><br><span class="line">from time import sleep</span><br><span class="line"></span><br><span class="line">def task(argss):</span><br><span class="line">    print(str(argss) +&quot; start ... sleep&quot;)</span><br><span class="line">    sleep(3)</span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    for i in range(5):</span><br><span class="line">        task(i)</span><br></pre></td></tr></table></figure>
+
+<p>2.一個工作睡3秒,執行5次。(<strong>並行方式</strong>,於雙核CPU) ;測出約9秒</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python</span><br><span class="line">from multiprocessing import Pool</span><br><span class="line">from time import sleep</span><br><span class="line">                                                                                                                                    </span><br><span class="line">def task(argss):</span><br><span class="line">    print(str(argss) +&quot; start ... sleep&quot;)</span><br><span class="line">    sleep(3)</span><br><span class="line">    </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    p&#x3D;Pool(2)</span><br><span class="line">    for i in range(5):</span><br><span class="line">        p.apply_async(task, args&#x3D;(i,))</span><br><span class="line">        </span><br><span class="line">    print(&#39;Waiting for all subprocesses..&#39;)</span><br><span class="line">    p.close()</span><br><span class="line">    p.join()</span><br><span class="line">    print(&#39;All Subprocess done ..&#39;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2><ul>
+<li><a href="https://docs.python.org.tw/3/library/multiprocessing.html#module-multiprocessing">Python標準庫_multiprocessing</a></li>
+<li><a href="filesystem:chrome-extension://oegnpmiddfljlloiklpkeelagaeejfai/temporary/9c5cbb04-be0a-4f65-b4c5-61b9bd7cd4c6/1487326368864_729/index.htm">Multiprocessing with Python</a></li>
+<li><a href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431927781401bb47ccf187b24c3b955157bb12c5882d000">廖雪峰-多進程</a></li>
+<li><a href="http://www.cnblogs.com/vamei/archive/2012/10/12/2721484.html#">Python標準庫10 多進程初步 (multiprocessing包)</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Browser自動化測試工具Selenium</title>
     <url>/2017/10/21/Browser%E8%87%AA%E5%8B%95%E5%8C%96%E6%B8%AC%E8%A9%A6%E5%B7%A5%E5%85%B7_Selenium_%E5%88%9D%E9%AB%94%E9%A9%97/</url>
     <content><![CDATA[<h1 id="Browser自動化測試工具Selenium-Selenium-初體驗"><a href="#Browser自動化測試工具Selenium-Selenium-初體驗" class="headerlink" title="Browser自動化測試工具Selenium - Selenium 初體驗"></a>Browser自動化測試工具Selenium - Selenium 初體驗</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p> 前幾天與Software部門在進行測試網站某個功能性(每秒瀏灠一次網頁,共進行100次,查看第幾次開始得到http status code:403),因為我們部門長期都是使用Command-Line工作,因此為了方便用Shell Script簡單寫一個測試程式,測試結果與software部們不相同,了解之後,才知道他們是使用Browser 用手點方式測試。為了雙方測試環境一致性及客觀地顯示測試數據,本人有一個想法是否有支援程序化工具來控制Firefox或Chrome,經Google之後,很多網路上都推薦使用 <strong>Selenium</strong>,這項自動化測試工具。</p>
@@ -127,8 +212,8 @@
 </ul>
 ]]></content>
       <tags>
-        <tag>Selenium</tag>
         <tag>Python</tag>
+        <tag>Selenium</tag>
         <tag>爬蟲</tag>
       </tags>
   </entry>
@@ -192,136 +277,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Python-Simple-parallel</title>
-    <url>/2018/04/01/Python-Simple-parallel/</url>
-    <content><![CDATA[<h2 id="Python-multiprocessing"><a href="#Python-multiprocessing" class="headerlink" title="Python - multiprocessing"></a>Python - multiprocessing</h2><p>大部分程式都是由上到下依序執行,若一個程式花費需要5秒,批示執行8次,理論是應該須40秒時間。現在CPU都是多核心,假設有一個8 core的CPU,將執行8次花費5秒的程式,分配到每個核心並行執行,理論上應該只要5秒就可完成工作。Python 標準函式庫 就有 multiprocessing 可達到此目的。</p>
-<h2 id="Python-Demo-1"><a href="#Python-Demo-1" class="headerlink" title="Python Demo 1"></a>Python Demo 1</h2><p>1.ping 5次 (循序方式,於雙核CPU) ;測出約8秒</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def job1(url):</span><br><span class="line">    tmpstr&#x3D;&quot;ping -c 5  &quot;+str(url)</span><br><span class="line">    os.system(tmpstr)</span><br><span class="line"></span><br><span class="line">if __name__&#x3D;&#x3D;&#39;__main__&#39;:</span><br><span class="line">    job1(&quot;8.8.8.8&quot;)</span><br><span class="line">    job1(&quot;8.8.4.4&quot;)</span><br></pre></td></tr></table></figure>
-
-
-<p>2.ping 5次 (<strong>並行方式</strong>,於雙核CPU);測出約4秒</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">import multiprocessing as mp</span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def job1(url):</span><br><span class="line">    tmpstr&#x3D;&quot;ping -c 5  &quot;+str(url)</span><br><span class="line">    os.system(tmpstr)</span><br><span class="line"></span><br><span class="line">if __name__&#x3D;&#x3D;&#39;__main__&#39;:</span><br><span class="line">    p1&#x3D;mp.Process(target&#x3D;job1,args&#x3D;(&quot;8.8.8.8&quot;,))</span><br><span class="line">    p1.start()</span><br><span class="line">    p2&#x3D;mp.Process(target&#x3D;job1,args&#x3D;(&quot;8.8.4.4&quot;,))</span><br><span class="line">    p2.start()</span><br></pre></td></tr></table></figure>
-
-<h2 id="Python-Demo-2-另一種Pool寫法"><a href="#Python-Demo-2-另一種Pool寫法" class="headerlink" title="Python Demo 2 ,另一種Pool寫法"></a>Python Demo 2 ,另一種Pool寫法</h2><p>1.一個工作睡3秒,執行5次。(循序方式,於雙核CPU) ;測出約15秒</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">from multiprocessing import Pool</span><br><span class="line">from time import sleep</span><br><span class="line"></span><br><span class="line">def task(argss):</span><br><span class="line">    print(str(argss) +&quot; start ... sleep&quot;)</span><br><span class="line">    sleep(3)</span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    for i in range(5):</span><br><span class="line">        task(i)</span><br></pre></td></tr></table></figure>
-
-<p>2.一個工作睡3秒,執行5次。(<strong>並行方式</strong>,於雙核CPU) ;測出約9秒</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python</span><br><span class="line">from multiprocessing import Pool</span><br><span class="line">from time import sleep</span><br><span class="line">                                                                                                                                    </span><br><span class="line">def task(argss):</span><br><span class="line">    print(str(argss) +&quot; start ... sleep&quot;)</span><br><span class="line">    sleep(3)</span><br><span class="line">    </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    p&#x3D;Pool(2)</span><br><span class="line">    for i in range(5):</span><br><span class="line">        p.apply_async(task, args&#x3D;(i,))</span><br><span class="line">        </span><br><span class="line">    print(&#39;Waiting for all subprocesses..&#39;)</span><br><span class="line">    p.close()</span><br><span class="line">    p.join()</span><br><span class="line">    print(&#39;All Subprocess done ..&#39;)</span><br></pre></td></tr></table></figure>
-
-<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2><ul>
-<li><a href="https://docs.python.org.tw/3/library/multiprocessing.html#module-multiprocessing">Python標準庫_multiprocessing</a></li>
-<li><a href="filesystem:chrome-extension://oegnpmiddfljlloiklpkeelagaeejfai/temporary/9c5cbb04-be0a-4f65-b4c5-61b9bd7cd4c6/1487326368864_729/index.htm">Multiprocessing with Python</a></li>
-<li><a href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431927781401bb47ccf187b24c3b955157bb12c5882d000">廖雪峰-多進程</a></li>
-<li><a href="http://www.cnblogs.com/vamei/archive/2012/10/12/2721484.html#">Python標準庫10 多進程初步 (multiprocessing包)</a></li>
-</ul>
-]]></content>
-      <tags>
-        <tag>Python</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>SSh-Reverse-Tunnel-RDP</title>
-    <url>/2019/01/20/SSh-Reverse-Tunnel-RDP/</url>
-    <content><![CDATA[<h1 id="使用ssh-Reverse-Tunnel-突破防火牆或NAT限制"><a href="#使用ssh-Reverse-Tunnel-突破防火牆或NAT限制" class="headerlink" title="使用ssh Reverse Tunnel 突破防火牆或NAT限制"></a>使用ssh Reverse Tunnel 突破防火牆或NAT限制</h1><ul>
-<li><a href="#depolymap">架構圖</a></li>
-<li><a href="#background">背景說明</a></li>
-<li><a href="#stepbystep">實作說明</a></li>
-<li><a href="#arduinoinfo">參考資料</a><h2 id="depolymap">架構圖</h2>
-試想一個情況,公司區網有一部A主機可以對外連線上網都沒問題,可是這部A主機是在防火牆或NAT後端裡面,外部B主機是無法連到這部A主機。若不想在防火牆設定由外部 mapping A主機的話,就可以利用 SSH Reverse Tunnel。</li>
-</ul>
-<p><img src="https://i.imgur.com/wxn8PHY.jpg" alt="SSh Reverse Tunnel架構圖"></p>
-<h2 id="background">背景說明</h2>
-- 區域網的 A主機(windows ) 192.168.88.8 , 有開啟RDP(有開啟遠端桌面服務,僅在區域網路使用)
-- 外部B主機(Linux,在Google GCP 租用的),35.221.139.139 (Public IP, 配合演示使用的),有開啟SSHD服務
-- 本篇主要目的,要從 Google GCP 租用的外部B主機連到區域網路A主機RDP服務
-
-<h2 id="stepbystep">實作說明</h2>
-如上圖顯示紫色那一段為第1步,綠色為第2步。
-
-<h3 id="第1步-先在A主機建立與B主機的Reverse-Tunnel連線"><a href="#第1步-先在A主機建立與B主機的Reverse-Tunnel連線" class="headerlink" title="第1步: 先在A主機建立與B主機的Reverse Tunnel連線"></a>第1步: 先在A主機建立與B主機的Reverse Tunnel連線</h3><p>A主機是Windows,用putty ssh 外部B主機</p>
-<p><strong>填上外部B主機ip位址</strong><br><img src="https://i.imgur.com/7GwQ1M2.png" alt="填上外部B主機ip位址"></p>
-<p><strong>填上Login帳號</strong><br><img src="https://i.imgur.com/WZF1bBO.png" alt="填上Login帳號"><br><strong>此步驟非必要的,此篇登入外部B主機是使用憑證方式</strong><br><img src="https://i.imgur.com/Fjr72mO.png" alt="此步驟非必要的,此篇登入外部B主機是使用憑證方式"><br><strong>最重要!!,設定reverse Tunnel</strong></p>
-<ul>
-<li>Source port:<strong>3389</strong>     表示給外部連線用的</li>
-<li>Destination : <strong>127.0.0.1:3389</strong> 表示連線A主機內部服務<br><img src="https://i.imgur.com/gnP20m9.png" alt="此步驟非必要的,此篇登入外部B主機是使用憑證方式"></li>
-</ul>
-<p><strong>完成連線</strong></p>
-<ul>
-<li>表示已連線登入到外部B主機</li>
-<li>紅色圈起來表示 上圖Source port部份<br><img src="https://i.imgur.com/KXxk0ql.png" alt="完成連線"></li>
-</ul>
-<h3 id="第2步-從B主機連線到內網A主機"><a href="#第2步-從B主機連線到內網A主機" class="headerlink" title="第2步: 從B主機連線到內網A主機"></a>第2步: 從B主機連線到內網A主機</h3><p><strong>使用freerdp這個套件連線 內網A主機rdp服務</strong><br><img src="https://i.imgur.com/7PUOZqq.png" alt="freerdp_connection"><br><strong>rdp Login</strong><br><img src="https://i.imgur.com/zz4uEA2.png" alt="rdp Login"><br><strong>用RDP 進入內網A主機</strong><br><img src="https://i.imgur.com/wym4YOO.png" alt="RDP A"></p>
-<h2 id="arduinoinfo">參考資料</h2>
-
-<ul>
-<li><a href="https://newtoypia.blogspot.com/2016/08/reverse-ssh-tunneling.htm">鑿一個反向 ssh 隧道， 對朋友或世界展示筆電或家裡的某個服務</a></li>
-<li><a href="https://ez3c.tw/2043">Reverse SSH Tunnel實際運用，搭配auotssh永不斷線，putty建立反向tunnel</a></li>
-<li><a href="http://blog.creke.net/722.htm">SSH隧道與端口轉發及內網穿透</a></li>
-</ul>
-]]></content>
-      <tags>
-        <tag>資安</tag>
-        <tag>Reverse-Tunnel</tag>
-        <tag>SSH</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Flask Config 載入方式</title>
-    <url>/2017/11/08/base-Flask-Config-%E8%BC%89%E5%85%A5%E6%96%B9%E5%BC%8F/</url>
-    <content><![CDATA[<h1 id="Flask-Config-載入方式"><a href="#Flask-Config-載入方式" class="headerlink" title="Flask Config 載入方式"></a>Flask Config 載入方式</h1><p>Flask config 內建變數很多,可以參考 官方<a href="http://flask.pocoo.org/docs/0.12/config/">Builtin Configuration Values</a>,中文翻譯可以參考<a href="http://python.usyiyi.cn/documents/flask_011_ch/config.html">內置的配置值</a>,這裡用<strong>DEBUG</strong>這個變數說明Config載入方。</p>
-<h2 id="以簡單程式碼為範例說明"><a href="#以簡單程式碼為範例說明" class="headerlink" title="以簡單程式碼為範例說明"></a>以簡單程式碼為範例說明</h2><p>預設沒有指定<strong>DEBUG</strong>是表False,不開啟程式debug模式。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;&lt;center&gt;&lt;h1&gt;Hello World&lt;/h1&gt;&lt;/center&gt;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run()</span><br></pre></td></tr></table></figure>
-<p>執行之後可以看到 ,預設沒有debug模式。<br><img src="https://i.imgur.com/GgxpfGZ.png" alt="Flask_NO_Debug"></p>
-<p>若有開啟debug模式,如下:<br><img src="https://i.imgur.com/7NDMAt1.png" alt="Flask_Debug"></p>
-<ul>
-<li>以陣列方式(寫在code裡)<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">app.config[<span class="string">&quot;DEBUG&quot;</span>]=<span class="literal">True</span></span><br><span class="line">...略...</span><br></pre></td></tr></table></figure></li>
-<li>加入參數到app.run()  (寫在code裡)<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">..略..</span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure></li>
-<li>以傳入模組物件方式 (寫在code裡)<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">DEBUG=<span class="literal">True</span></span><br><span class="line">app.config.from_object(__name__)</span><br><span class="line">...略...</span><br></pre></td></tr></table></figure></li>
-<li>以傳入模組物件方式 (寫在另一個檔案裡;config.py)<br>config.py<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">DEBUG=<span class="literal">True</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">app.config.from_object(<span class="string">&#x27;config&#x27;</span>)</span><br><span class="line">...略...</span><br></pre></td></tr></table></figure>
-或是也可這樣表示<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line"><span class="keyword">import</span> config</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">app.config.from_object(<span class="string">&#x27;config&#x27;</span>)</span><br><span class="line">...略...</span><br></pre></td></tr></table></figure></li>
-<li>透過檔案名稱方式載入<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">app.config.from_pyfile(<span class="string">&#x27;config.py&#x27;</span>)</span><br><span class="line">...略...</span><br></pre></td></tr></table></figure></li>
-<li>透過系統的環境變數載入<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># export tt=&#x27;config.py&#x27;</span></span><br></pre></td></tr></table></figure></li>
-</ul>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">app.config.from_envvar(<span class="string">&#x27;tt&#x27;</span>)</span><br><span class="line">...略...</span><br></pre></td></tr></table></figure>
-<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2><ul>
-<li><a href="https://www.youtube.com/watch?v=7RWro4VF_9c">Flask Configuration From Environment Variables-Pretty Printed</a></li>
-<li><a href="https://www.youtube.com/watch?v=T86FkDhVH5A&t=381s">Flask Configuration</a></li>
-</ul>
-]]></content>
-      <tags>
-        <tag>Python</tag>
-        <tag>Flask</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>基礎1：Flask 建立一個app</title>
-    <url>/2018/06/17/base-Flask-app1/</url>
-    <content><![CDATA[<h1 id="基礎：Flask-建立一個app"><a href="#基礎：Flask-建立一個app" class="headerlink" title="基礎：Flask 建立一個app"></a>基礎：Flask 建立一個app</h1><h2 id="簡單範例-Hello-World"><a href="#簡單範例-Hello-World" class="headerlink" title="簡單範例 Hello World"></a>簡單範例 Hello World</h2><p>demo.py</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;&lt;h1&gt;Hello World&lt;/h1&gt;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/home&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index2</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;My Home&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>  __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;127.0.0.1&#x27;</span>,port=<span class="number">8099</span>,debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
-
-<h2 id="啟動"><a href="#啟動" class="headerlink" title="啟動"></a>啟動</h2><p>啟動一個 web 服務, listen 127.0.0.1:8099</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./demo.py</span><br><span class="line">或是 python3 demo.py</span><br></pre></td></tr></table></figure>
-
-<h2 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h2><p>在Browser 測試兩個網址,看看會回應什麼變化。</p>
-<ul>
-<li><a href="http://127.0.0.1:8099/">http://127.0.0.1:8099</a></li>
-<li><a href="http://127.0.0.1:8099/home">http://127.0.0.1:8099/home</a></li>
-<li><a href="http://127.0.0.1:8099/home/">http://127.0.0.1:8099/home/</a></li>
-</ul>
-<h2 id="說明"><a href="#說明" class="headerlink" title="說明"></a>說明</h2><ul>
-<li> Flask 類 傳入的參數  ‘<strong>name</strong>‘ ,表示 程式的根目錄</li>
-<li> @app.route  裝飾器  將 url  與   視圖函數(View)   def index()  關聯到 app.url_map 屬性上 。處理 url  與 視圖函數的過程稱為路由(route)</li>
-<li> app.run 使用 Python 標準函數  BaseHTTPServer.HTTPServer 啟動一個 web 服務。有 host , port , debug 等諸多參數</li>
-<li> Flask 使用  唯一URL 。   使用 curl  <a href="http://127.0.0.1:8099/home">http://127.0.0.1:8099/home</a>  (回 http stat code  200)  與  curl  <a href="http://127.0.0.1:8099/home/">http://127.0.0.1:8099/home/</a>   (回http stat code 404)   回應結果不同。</li>
-</ul>
-]]></content>
-      <tags>
-        <tag>Python</tag>
-        <tag>Flask</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>基礎2：Flask URL 傳值</title>
     <url>/2018/06/17/base-Flask-app2/</url>
     <content><![CDATA[<h1 id="基礎：Flask-URL-傳值"><a href="#基礎：Flask-URL-傳值" class="headerlink" title="基礎：Flask URL 傳值"></a>基礎：Flask URL 傳值</h1><h2 id="url-傳值範例"><a href="#url-傳值範例" class="headerlink" title="url 傳值範例"></a>url 傳值範例</h2><p>demo2.py</p>
@@ -380,6 +335,97 @@
       </tags>
   </entry>
   <entry>
+    <title>基礎1：Flask 建立一個app</title>
+    <url>/2018/06/17/base-Flask-app1/</url>
+    <content><![CDATA[<h1 id="基礎：Flask-建立一個app"><a href="#基礎：Flask-建立一個app" class="headerlink" title="基礎：Flask 建立一個app"></a>基礎：Flask 建立一個app</h1><h2 id="簡單範例-Hello-World"><a href="#簡單範例-Hello-World" class="headerlink" title="簡單範例 Hello World"></a>簡單範例 Hello World</h2><p>demo.py</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;&lt;h1&gt;Hello World&lt;/h1&gt;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/home&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index2</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;My Home&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>  __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;127.0.0.1&#x27;</span>,port=<span class="number">8099</span>,debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="啟動"><a href="#啟動" class="headerlink" title="啟動"></a>啟動</h2><p>啟動一個 web 服務, listen 127.0.0.1:8099</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./demo.py</span><br><span class="line">或是 python3 demo.py</span><br></pre></td></tr></table></figure>
+
+<h2 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h2><p>在Browser 測試兩個網址,看看會回應什麼變化。</p>
+<ul>
+<li><a href="http://127.0.0.1:8099/">http://127.0.0.1:8099</a></li>
+<li><a href="http://127.0.0.1:8099/home">http://127.0.0.1:8099/home</a></li>
+<li><a href="http://127.0.0.1:8099/home/">http://127.0.0.1:8099/home/</a></li>
+</ul>
+<h2 id="說明"><a href="#說明" class="headerlink" title="說明"></a>說明</h2><ul>
+<li> Flask 類 傳入的參數  ‘<strong>name</strong>‘ ,表示 程式的根目錄</li>
+<li> @app.route  裝飾器  將 url  與   視圖函數(View)   def index()  關聯到 app.url_map 屬性上 。處理 url  與 視圖函數的過程稱為路由(route)</li>
+<li> app.run 使用 Python 標準函數  BaseHTTPServer.HTTPServer 啟動一個 web 服務。有 host , port , debug 等諸多參數</li>
+<li> Flask 使用  唯一URL 。   使用 curl  <a href="http://127.0.0.1:8099/home">http://127.0.0.1:8099/home</a>  (回 http stat code  200)  與  curl  <a href="http://127.0.0.1:8099/home/">http://127.0.0.1:8099/home/</a>   (回http stat code 404)   回應結果不同。</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>Flask</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hello World</title>
+    <url>/2021/04/17/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>SSh-Reverse-Tunnel-RDP</title>
+    <url>/2019/01/20/SSh-Reverse-Tunnel-RDP/</url>
+    <content><![CDATA[<h1 id="使用ssh-Reverse-Tunnel-突破防火牆或NAT限制"><a href="#使用ssh-Reverse-Tunnel-突破防火牆或NAT限制" class="headerlink" title="使用ssh Reverse Tunnel 突破防火牆或NAT限制"></a>使用ssh Reverse Tunnel 突破防火牆或NAT限制</h1><ul>
+<li><a href="#depolymap">架構圖</a></li>
+<li><a href="#background">背景說明</a></li>
+<li><a href="#stepbystep">實作說明</a></li>
+<li><a href="#arduinoinfo">參考資料</a><h2 id="depolymap">架構圖</h2>
+試想一個情況,公司區網有一部A主機可以對外連線上網都沒問題,可是這部A主機是在防火牆或NAT後端裡面,外部B主機是無法連到這部A主機。若不想在防火牆設定由外部 mapping A主機的話,就可以利用 SSH Reverse Tunnel。</li>
+</ul>
+<p><img src="https://i.imgur.com/wxn8PHY.jpg" alt="SSh Reverse Tunnel架構圖"></p>
+<h2 id="background">背景說明</h2>
+- 區域網的 A主機(windows ) 192.168.88.8 , 有開啟RDP(有開啟遠端桌面服務,僅在區域網路使用)
+- 外部B主機(Linux,在Google GCP 租用的),35.221.139.139 (Public IP, 配合演示使用的),有開啟SSHD服務
+- 本篇主要目的,要從 Google GCP 租用的外部B主機連到區域網路A主機RDP服務
+
+<h2 id="stepbystep">實作說明</h2>
+如上圖顯示紫色那一段為第1步,綠色為第2步。
+
+<h3 id="第1步-先在A主機建立與B主機的Reverse-Tunnel連線"><a href="#第1步-先在A主機建立與B主機的Reverse-Tunnel連線" class="headerlink" title="第1步: 先在A主機建立與B主機的Reverse Tunnel連線"></a>第1步: 先在A主機建立與B主機的Reverse Tunnel連線</h3><p>A主機是Windows,用putty ssh 外部B主機</p>
+<p><strong>填上外部B主機ip位址</strong><br><img src="https://i.imgur.com/7GwQ1M2.png" alt="填上外部B主機ip位址"></p>
+<p><strong>填上Login帳號</strong><br><img src="https://i.imgur.com/WZF1bBO.png" alt="填上Login帳號"><br><strong>此步驟非必要的,此篇登入外部B主機是使用憑證方式</strong><br><img src="https://i.imgur.com/Fjr72mO.png" alt="此步驟非必要的,此篇登入外部B主機是使用憑證方式"><br><strong>最重要!!,設定reverse Tunnel</strong></p>
+<ul>
+<li>Source port:<strong>3389</strong>     表示給外部連線用的</li>
+<li>Destination : <strong>127.0.0.1:3389</strong> 表示連線A主機內部服務<br><img src="https://i.imgur.com/gnP20m9.png" alt="此步驟非必要的,此篇登入外部B主機是使用憑證方式"></li>
+</ul>
+<p><strong>完成連線</strong></p>
+<ul>
+<li>表示已連線登入到外部B主機</li>
+<li>紅色圈起來表示 上圖Source port部份<br><img src="https://i.imgur.com/KXxk0ql.png" alt="完成連線"></li>
+</ul>
+<h3 id="第2步-從B主機連線到內網A主機"><a href="#第2步-從B主機連線到內網A主機" class="headerlink" title="第2步: 從B主機連線到內網A主機"></a>第2步: 從B主機連線到內網A主機</h3><p><strong>使用freerdp這個套件連線 內網A主機rdp服務</strong><br><img src="https://i.imgur.com/7PUOZqq.png" alt="freerdp_connection"><br><strong>rdp Login</strong><br><img src="https://i.imgur.com/zz4uEA2.png" alt="rdp Login"><br><strong>用RDP 進入內網A主機</strong><br><img src="https://i.imgur.com/wym4YOO.png" alt="RDP A"></p>
+<h2 id="arduinoinfo">參考資料</h2>
+
+<ul>
+<li><a href="https://newtoypia.blogspot.com/2016/08/reverse-ssh-tunneling.htm">鑿一個反向 ssh 隧道， 對朋友或世界展示筆電或家裡的某個服務</a></li>
+<li><a href="https://ez3c.tw/2043">Reverse SSH Tunnel實際運用，搭配auotssh永不斷線，putty建立反向tunnel</a></li>
+<li><a href="http://blog.creke.net/722.htm">SSH隧道與端口轉發及內網穿透</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>資安</tag>
+        <tag>Reverse-Tunnel</tag>
+        <tag>SSH</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>基礎3：Flask Jinja2 模板引擎</title>
     <url>/2018/10/13/base-Flask-template-app3/</url>
     <content><![CDATA[<h1 id="基礎：Flask-Jinja2-模板引擎"><a href="#基礎：Flask-Jinja2-模板引擎" class="headerlink" title="基礎：Flask Jinja2 模板引擎"></a>基礎：Flask Jinja2 模板引擎</h1><h2 id="本範例程式的目錄結構-使用python3-x"><a href="#本範例程式的目錄結構-使用python3-x" class="headerlink" title="本範例程式的目錄結構 (使用python3.x)"></a>本範例程式的目錄結構 (使用python3.x)</h2><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.</span><br><span class="line">├── hello.py</span><br><span class="line">└── templates</span><br><span class="line">    ├── base.html</span><br><span class="line">    ├── test2.html</span><br><span class="line">    ├── test.html</span><br><span class="line">    └── user.html</span><br><span class="line"></span><br></pre></td></tr></table></figure>
@@ -433,21 +479,32 @@
       </tags>
   </entry>
   <entry>
-    <title>Hello World</title>
-    <url>/2021/04/17/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+    <title>Flask Config 載入方式</title>
+    <url>/2017/11/08/base-Flask-Config-%E8%BC%89%E5%85%A5%E6%96%B9%E5%BC%8F/</url>
+    <content><![CDATA[<h1 id="Flask-Config-載入方式"><a href="#Flask-Config-載入方式" class="headerlink" title="Flask Config 載入方式"></a>Flask Config 載入方式</h1><p>Flask config 內建變數很多,可以參考 官方<a href="http://flask.pocoo.org/docs/0.12/config/">Builtin Configuration Values</a>,中文翻譯可以參考<a href="http://python.usyiyi.cn/documents/flask_011_ch/config.html">內置的配置值</a>,這裡用<strong>DEBUG</strong>這個變數說明Config載入方。</p>
+<h2 id="以簡單程式碼為範例說明"><a href="#以簡單程式碼為範例說明" class="headerlink" title="以簡單程式碼為範例說明"></a>以簡單程式碼為範例說明</h2><p>預設沒有指定<strong>DEBUG</strong>是表False,不開啟程式debug模式。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;&lt;center&gt;&lt;h1&gt;Hello World&lt;/h1&gt;&lt;/center&gt;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run()</span><br></pre></td></tr></table></figure>
+<p>執行之後可以看到 ,預設沒有debug模式。<br><img src="https://i.imgur.com/GgxpfGZ.png" alt="Flask_NO_Debug"></p>
+<p>若有開啟debug模式,如下:<br><img src="https://i.imgur.com/7NDMAt1.png" alt="Flask_Debug"></p>
+<ul>
+<li>以陣列方式(寫在code裡)<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">app.config[<span class="string">&quot;DEBUG&quot;</span>]=<span class="literal">True</span></span><br><span class="line">...略...</span><br></pre></td></tr></table></figure></li>
+<li>加入參數到app.run()  (寫在code裡)<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">..略..</span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure></li>
+<li>以傳入模組物件方式 (寫在code裡)<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">DEBUG=<span class="literal">True</span></span><br><span class="line">app.config.from_object(__name__)</span><br><span class="line">...略...</span><br></pre></td></tr></table></figure></li>
+<li>以傳入模組物件方式 (寫在另一個檔案裡;config.py)<br>config.py<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">DEBUG=<span class="literal">True</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">app.config.from_object(<span class="string">&#x27;config&#x27;</span>)</span><br><span class="line">...略...</span><br></pre></td></tr></table></figure>
+或是也可這樣表示<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line"><span class="keyword">import</span> config</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">app.config.from_object(<span class="string">&#x27;config&#x27;</span>)</span><br><span class="line">...略...</span><br></pre></td></tr></table></figure></li>
+<li>透過檔案名稱方式載入<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">app.config.from_pyfile(<span class="string">&#x27;config.py&#x27;</span>)</span><br><span class="line">...略...</span><br></pre></td></tr></table></figure></li>
+<li>透過系統的環境變數載入<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># export tt=&#x27;config.py&#x27;</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app=Flask(__name__)</span><br><span class="line">...略...</span><br><span class="line">app.config.from_envvar(<span class="string">&#x27;tt&#x27;</span>)</span><br><span class="line">...略...</span><br></pre></td></tr></table></figure>
+<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2><ul>
+<li><a href="https://www.youtube.com/watch?v=7RWro4VF_9c">Flask Configuration From Environment Variables-Pretty Printed</a></li>
+<li><a href="https://www.youtube.com/watch?v=T86FkDhVH5A&t=381s">Flask Configuration</a></li>
+</ul>
 ]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>Flask</tag>
+      </tags>
   </entry>
 </search>
