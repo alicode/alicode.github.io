@@ -20,25 +20,18 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="KVM installKVM 全名為 Kernel-Based Virtual Machine,是一個用於Linux核心中的虛擬化基礎設施。本單元主要演示安裝KVM過程,主要利用VMware Esxi 平台建立Netsed hypervisors環境,即是 在 Esxi 平台建立一個 虛擬機 ,在此虛擬機安裝KVM ,再由kvm 建立一台虛擬機。 環境需求 實體機的 CPU 需支持 Intel (">
-<meta property="og:type" content="article">
-<meta property="og:title" content="KVM-in-VMware-Esxi">
-<meta property="og:url" content="http://example.com/2017/11/27/2017-11-27_KVM-in-VMware-Esx/index.html">
+  <meta name="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+<meta property="og:type" content="website">
+<meta property="og:title" content="阿里發發電腦筆記">
+<meta property="og:url" content="http://example.com/archives/2016/index.html">
 <meta property="og:site_name" content="阿里發發電腦筆記">
-<meta property="og:description" content="KVM installKVM 全名為 Kernel-Based Virtual Machine,是一個用於Linux核心中的虛擬化基礎設施。本單元主要演示安裝KVM過程,主要利用VMware Esxi 平台建立Netsed hypervisors環境,即是 在 Esxi 平台建立一個 虛擬機 ,在此虛擬機安裝KVM ,再由kvm 建立一台虛擬機。 環境需求 實體機的 CPU 需支持 Intel (">
+<meta property="og:description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
 <meta property="og:locale" content="zh_TW">
-<meta property="og:image" content="https://i.imgur.com/akOCDSI.gif">
-<meta property="og:image" content="https://i.imgur.com/mz6ppy6.gif">
-<meta property="og:image" content="https://i.imgur.com/LlPqEU0.gif">
-<meta property="article:published_time" content="2017-11-26T16:00:00.000Z">
-<meta property="article:modified_time" content="2021-12-18T04:31:48.068Z">
 <meta property="article:author" content="Alicode">
-<meta property="article:tag" content="KVM">
-<meta property="article:tag" content="VMware">
+<meta property="article:tag" content="Linux,bash , Python ,nodejs">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://i.imgur.com/akOCDSI.gif">
 
-<link rel="canonical" href="http://example.com/2017/11/27/2017-11-27_KVM-in-VMware-Esx/">
+<link rel="canonical" href="http://example.com/archives/2016/">
 
 
 <script id="page-configurations">
@@ -46,12 +39,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : true,
+    isPost : false,
     lang   : 'zh-TW'
   };
 </script>
 
-  <title>KVM-in-VMware-Esxi | 阿里發發電腦筆記</title>
+  <title>歸檔 | 阿里發發電腦筆記</title>
   
 
 
@@ -184,135 +177,50 @@
         <div class="content-wrap">
           
 
-          <div class="content post posts-expand">
+          <div class="content archive">
             
 
-    
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2017/11/27/2017-11-27_KVM-in-VMware-Esx/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Alicode">
-      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="阿里發發電腦筆記">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          KVM-in-VMware-Esxi
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">發表於</span>
-
-              <time title="創建時間：2017-11-27 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-27T00:00:00+08:00">2017-11-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2021-12-18 12:31:48" itemprop="dateModified" datetime="2021-12-18T12:31:48+08:00">2021-12-18</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
+  
+  <div class="post-block">
+    <div class="posts-collapse">
+      <div class="collection-title">
+        <span class="collection-header">嗯..! 目前共有 17 篇文章。 繼續努力。</span>
+      </div>
 
       
-        <h1 id="KVM-install"><a href="#KVM-install" class="headerlink" title="KVM install"></a>KVM install</h1><p>KVM 全名為 <strong>Kernel-Based Virtual Machine</strong>,是一個用於Linux核心中的虛擬化基礎設施。<br>本單元主要演示安裝KVM過程,主要利用VMware Esxi 平台建立Netsed hypervisors環境,即是 在 Esxi 平台建立一個 虛擬機 ,在此虛擬機安裝KVM ,再由kvm 建立一台虛擬機。</p>
-<h2 id="環境需求"><a href="#環境需求" class="headerlink" title="環境需求"></a>環境需求</h2><ul>
-<li>實體機的 CPU 需支持 Intel (<strong>Intel Virtualization Technology, Intel VT-x</strong>); AMD (<strong>AMD Secure Virtual Machine, AMD</strong>)</li>
-<li> VMware ESXi 5 或 6 </li>
-<li> Ubuntu 16.04 Desktop LTS ,<a href="https://www.ubuntu-tw.org/modules/tinyd0/%22target=%22_blank">下載點</a></li>
-</ul>
-<h2 id="步驟"><a href="#步驟" class="headerlink" title="步驟"></a>步驟</h2><ol>
-<li>在esxi 平台上建立虛擬機，主要關鍵,勾選硬體虛擬化項目<strong>向Guest OS 公開硬體協助虛擬化</strong>,此操作可以在 <strong>ESXi Web Client or ESXi Host Client</strong>下完成。<br><img src="https://i.imgur.com/akOCDSI.gif" alt="如圖示說明"></li>
-<li>網路部分,需要將VSS Security Policies的<strong>Promiscuous mode</strong> 設為允許。此功能相當於HUB,將port 收到的封包,會廣播向其它的Port傳送<br><img src="https://i.imgur.com/mz6ppy6.gif" alt="Promiscuous mode"></li>
-</ol>
-<p>3.之後,虛擬機安裝OS ,Ubuntu 16.04 Desktop LTS<br>4.之後,安裝完OS。先確定以下項目,每項都必須確認無誤後,才能做下一步</p>
-<ul>
-<li>VM是否支援CPU虛擬化<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -E -i &#39;vmx|svm&#39; &#x2F;etc&#x2F;cpuinfo</span><br></pre></td></tr></table></figure></li>
-<li>確認kvm是否安奘<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-get install cpu-checker</span><br><span class="line">kvm-ok</span><br></pre></td></tr></table></figure></li>
-<li>確認是否有載入KVM 相關模組<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsmod|grep kvm</span><br></pre></td></tr></table></figure></li>
-</ul>
-<ol start="5">
-<li>安裝 libvirt,及看使用者(這邊以 andy)是否在指定群組<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-get install qemu-kvm libvirt-bin</span><br><span class="line">grep andy &#x2F;etc&#x2F;group</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">adm:x:4:syslog,andy</span><br><span class="line">cdrom:x:24:andy</span><br><span class="line">sudo:x:27:andy</span><br><span class="line">dip:x:30:andy</span><br><span class="line">plugdev:x:46:andy</span><br><span class="line">lpadmin:x:113:andy</span><br><span class="line">andy:x:1000:</span><br><span class="line">sambashare:x:128:andy</span><br><span class="line">libvirtd:x:130:andy</span><br></pre></td></tr></table></figure></li>
-<li>安裝 virt-manager , bridge-utils <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install virt-manager bridge-utils</span><br></pre></td></tr></table></figure></li>
-<li>開始執行virt-manager 建立虛擬機,會跳出以下圖示<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo virt-manager</span><br></pre></td></tr></table></figure>
-<img src="https://i.imgur.com/LlPqEU0.gif" alt="virt-manager"><h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2></li>
-</ol>
-<ul>
-<li><a target="_blank" rel="noopener" href="http://www.vladan.fr/nested-esxi-6-in-a-lab/">Nested ESXi 6 in a Lab</a></li>
-<li><a target="_blank" rel="noopener" href="http://www.ntueees.tp.edu.tw/wordpress/?p=2981">Fedora 17 KVM於ESXi 5.1參數設定與安裝VMTools</a></li>
-</ul>
-
+    <div class="collection-year">
+      <span class="collection-header">2016</span>
     </div>
 
-    
-    
-    
-        
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
 
-  <div class="followme">
-    <p>歡迎關注我的其它發布渠道</p>
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2016-06-19T00:00:00+08:00"
+              content="2016-06-19">
+          06-19
+        </time>
+      </div>
 
-    <div class="social-list">
-
-        <div class="social-item">
-          <a target="_blank" class="social-link" href="/atom.xml">
-            <span class="icon">
-              <i class="fa fa-rss"></i>
-            </span>
-
-            <span class="label">RSS</span>
+      <div class="post-title">
+          <a class="post-title-link" href="/2016/06/19/2016-06-19_Nginx-Fastcgi-Cache-Lua/" itemprop="url">
+            <span itemprop="name">Nginx_Fastcgi_Cache + Lua 執行過程</span>
           </a>
-        </div>
+      </div>
+
+    </header>
+  </article>
+
+
     </div>
   </div>
-
-
-      <footer class="post-footer">
-          <div class="post-tags">
-              <a href="/tags/KVM/" rel="tag"># KVM</a>
-              <a href="/tags/VMware/" rel="tag"># VMware</a>
-          </div>
-
-        
-
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/2017/11/08/base-Flask-Config-%E8%BC%89%E5%85%A5%E6%96%B9%E5%BC%8F/" rel="prev" title="Flask Config 載入方式">
-      <i class="fa fa-chevron-left"></i> Flask Config 載入方式
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/2017/12/19/2017-12-19_SoftEther-VPN-Site-to-Site-L2-Bridge-VPN/" rel="next" title="SoftEther VPN - Site to Site L2 Bridge VPN">
-      SoftEther VPN - Site to Site L2 Bridge VPN <i class="fa fa-chevron-right"></i>
-    </a></div>
-    </div>
-      </footer>
-    
-  </article>
   
   
+  
+
   
 
 
@@ -365,7 +273,6 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#KVM-install"><span class="nav-number">1.</span> <span class="nav-text">KVM install</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%92%B0%E5%A2%83%E9%9C%80%E6%B1%82"><span class="nav-number">1.1.</span> <span class="nav-text">環境需求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A5%E9%A9%9F"><span class="nav-number">1.2.</span> <span class="nav-text">步驟</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E8%B3%87%E6%96%99"><span class="nav-number">1.3.</span> <span class="nav-text">參考資料</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
