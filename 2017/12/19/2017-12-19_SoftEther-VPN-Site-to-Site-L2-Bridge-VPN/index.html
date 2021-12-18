@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="架構說明 安裝SoftEther VPN Server 及配置 架設DHCP Server 安裝SoftEther VPN  bridge及配置 串接 Cascade Client端驗證 參考資料  架構說明  本實驗使用 vsphere Esxi 建立的LAB。此實驗目的要讓分屬在不同的廣域網路透過SoftEther VPN 將兩者串接在一起,形成邏輯上的區域網路。換言之,假設圖中 Site">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SoftEther VPN - Site to Site L2 Bridge VPN">
+<meta property="og:url" content="http://example.com/2017/12/19/2017-12-19_SoftEther-VPN-Site-to-Site-L2-Bridge-VPN/index.html">
+<meta property="og:site_name" content="阿里發發電腦筆記">
+<meta property="og:description" content="架構說明 安裝SoftEther VPN Server 及配置 架設DHCP Server 安裝SoftEther VPN  bridge及配置 串接 Cascade Client端驗證 參考資料  架構說明  本實驗使用 vsphere Esxi 建立的LAB。此實驗目的要讓分屬在不同的廣域網路透過SoftEther VPN 將兩者串接在一起,形成邏輯上的區域網路。換言之,假設圖中 Site">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://i.imgur.com/brUIAge.png">
+<meta property="og:image" content="https://i.imgur.com/c4r8DXh.png">
+<meta property="og:image" content="https://i.imgur.com/UOBsuuE.png">
+<meta property="article:published_time" content="2017-12-18T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-12-18T04:14:04.614Z">
+<meta property="article:author" content="Alicode">
+<meta property="article:tag" content="SoftEther-VPN">
+<meta property="article:tag" content="VPN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/brUIAge.png">
+
+<link rel="canonical" href="http://example.com/2017/12/19/2017-12-19_SoftEther-VPN-Site-to-Site-L2-Bridge-VPN/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>SoftEther VPN - Site to Site L2 Bridge VPN | 阿里發發電腦筆記</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="阿里發發電腦筆記" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">阿里發發電腦筆記</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Alibaba Wiki - 菩薩球球</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜尋
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜尋..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/12/19/2017-12-19_SoftEther-VPN-Site-to-Site-L2-Bridge-VPN/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SoftEther VPN - Site to Site L2 Bridge VPN
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2017-12-19 00:00:00" itemprop="dateCreated datePublished" datetime="2017-12-19T00:00:00+08:00">2017-12-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-18 12:14:04" itemprop="dateModified" datetime="2021-12-18T12:14:04+08:00">2021-12-18</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <ul>
+<li><a href="#depolymap">架構說明</a></li>
+<li><a href="#install">安裝SoftEther VPN Server 及配置</a></li>
+<li><a href="#dhcpserver">架設DHCP Server</a></li>
+<li><a href="#install2">安裝SoftEther VPN  bridge及配置</a></li>
+<li><a href="#cascade">串接 Cascade</a></li>
+<li><a href="#checkclient">Client端驗證</a></li>
+<li><a href="#arduinoinfo">參考資料</a></li>
+</ul>
+<h2 id="depolymap">架構說明</h2>
+
+<p><img src="https://i.imgur.com/brUIAge.png" alt="sito2sitel2"><br>本實驗使用 vsphere Esxi 建立的LAB。此實驗目的要讓分屬在不同的廣域網路透過<strong>SoftEther VPN</strong> 將兩者串接在一起,形成邏輯上的區域網路。換言之,假設圖中 Site B 是位於台中辦公室; Site A 位於台北辦公室,透過SoftEther VPN串接起來,台中與台北辦公室彼此就可透過區域網路的方式互傳資料,或是台中有架一台DHCP Server(假設是 192.168.11.110-150);台北辦公室的Client端就可以分配到一個私有IP(192.168.11.x)。</p>
+<blockquote>
+<p>上面架構圖中右邊 顯示 <strong>vSwitch5</strong> 應改成 <strong>vSwitch4</strong></p>
+</blockquote>
+<p>因為只是模擬的實驗,192.168.88.62 與 192.168.88.63當作是網域網路的Public IP。vSwitch0 , vSwitch 3及vSwitch 4是 Vsphere Esxi 模擬出來的。像是如下<br><img src="https://i.imgur.com/c4r8DXh.png" alt="vswitch0"><br><img src="https://i.imgur.com/UOBsuuE.png" alt="vswitch3_4"></p>
+<h2 id="install">安裝SoftEther VPN Server 及配置</h2>
+- 安裝SoftEther VPN Server  及 啟動 vpnserver
+執行到 make 就依照 它提問進行即可。
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># cd &#x2F;usr&#x2F;local&#x2F;src&#x2F;</span><br><span class="line"># wget http:&#x2F;&#x2F;www.softether-download.com&#x2F;files&#x2F;softether&#x2F;v4.24-9651-beta-2017.10.23-tree&#x2F;Linux&#x2F;SoftEther_VPN_Server&#x2F;64bit_-_Intel_x64_or_AMD64&#x2F;softether-vpnserver-v4.24-9651-beta-2017.10.23-linux-x64-64bit.tar.gz</span><br><span class="line"># tar zxf softether-vpnserver-v4.24-9651-beta-2017.10.23-linux-x64-64bit.tar.gz</span><br><span class="line"># cd vpnserver&#x2F;</span><br><span class="line"># make</span><br><span class="line"></span><br><span class="line">cd ..</span><br><span class="line">mv vpnserver&#x2F; &#x2F;usr&#x2F;local&#x2F;</span><br><span class="line">cd &#x2F;usr&#x2F;local&#x2F;vpnserver</span><br><span class="line"></span><br><span class="line">chmod 600 *</span><br><span class="line">chmod 700 vpnserver</span><br><span class="line">chmod 700 vpncmd </span><br></pre></td></tr></table></figure>
+vpnserver  啟動腳本; /etc/init.d/vpnserver
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;sh</span><br><span class="line"># chkconfig: 2345 99 01</span><br><span class="line"># description: SoftEther VPN Server</span><br><span class="line">DAEMON&#x3D;&#x2F;usr&#x2F;local&#x2F;vpnserver&#x2F;vpnserver</span><br><span class="line">LOCK&#x3D;&#x2F;var&#x2F;lock&#x2F;subsys&#x2F;vpnserver</span><br><span class="line">test -x $DAEMON || exit 0</span><br><span class="line">case &quot;$1&quot; in</span><br><span class="line">start)</span><br><span class="line">$DAEMON start</span><br><span class="line">touch $LOCK</span><br><span class="line">;;</span><br><span class="line">stop)</span><br><span class="line">$DAEMON stop</span><br><span class="line">rm $LOCK</span><br><span class="line">;;</span><br><span class="line">restart)</span><br><span class="line">$DAEMON stop</span><br><span class="line">sleep 3</span><br><span class="line">$DAEMON start</span><br><span class="line">;;</span><br><span class="line">*)</span><br><span class="line">echo &quot;Usage: $0 &#123;start|stop|restart&#125;&quot;</span><br><span class="line">exit 1</span><br><span class="line">esac</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+- 在啟動 vpnserver 之前 ,先使用vpncmd check 系統狀態
+選擇 3 , 打上 check 指令。
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;usr&#x2F;local&#x2F;vpnserver</span><br><span class="line">.&#x2F;vpncmd</span><br><span class="line"></span><br><span class="line">VPN Tools&gt;check</span><br></pre></td></tr></table></figure>
+- 更改權限,設定開機啟動及啟動 vpnserver
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">chmod a+x &#x2F;etc&#x2F;init.d&#x2F;vpnserver</span><br><span class="line">chkconfig --add vpnserver </span><br><span class="line">&#x2F;etc&#x2F;init.d&#x2F;vpnserver start</span><br></pre></td></tr></table></figure>
+- 建立一個 Virtual Hub  名為 Taichung ,  並切換到該 Virtual Hub
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&gt;hubcreate Taichung</span><br><span class="line">VPN Server&gt;hub Taichung</span><br></pre></td></tr></table></figure>
+- 設定使用者帳號及密碼 ;  VPN Server  與 bridge 建立聯結(Cascade)時需要的
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&#x2F;Taichung&gt;usercreate amy</span><br><span class="line">VPN Server&#x2F;Taichung&gt;userpasswordset amy</span><br></pre></td></tr></table></figure>
+- show  virtual hub list
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&#x2F;Taichung&gt;hublist</span><br><span class="line">HubList 命令 - 获取一个虚拟 HUB 列表</span><br><span class="line">项目        |价值</span><br><span class="line">------------+-------------------</span><br><span class="line">虚拟 HUB 名 |DEFAULT</span><br><span class="line">状态        |在线</span><br><span class="line">类型        |独立</span><br><span class="line">用户        |0</span><br><span class="line">组          |0</span><br><span class="line">会话        |0</span><br><span class="line">MAC 表      |0</span><br><span class="line">IP 表       |0</span><br><span class="line">登录次数    |0</span><br><span class="line">最后登录时间|2017-12-16 15:45:32</span><br><span class="line">最后通信时间|2017-12-16 15:45:32</span><br><span class="line">传输字节    |0</span><br><span class="line">传输数据包  |0</span><br><span class="line">------------+-------------------</span><br><span class="line">虚拟 HUB 名 |Taichung</span><br><span class="line">状态        |在线</span><br><span class="line">类型        |独立</span><br><span class="line">用户        |1</span><br><span class="line">组          |0</span><br><span class="line">会话        |0</span><br><span class="line">MAC 表      |0</span><br><span class="line">IP 表       |0</span><br><span class="line">登录次数    |0</span><br><span class="line">最后登录时间|2017-12-16 15:51:59</span><br><span class="line">最后通信时间|2017-12-16 15:51:59</span><br><span class="line">传输字节    |0</span><br><span class="line">传输数据包  |0</span><br><span class="line">命令成功完成。</span><br></pre></td></tr></table></figure>
+- 建立 local bridge 。 將 此Lab的 eth1 加入 local bridge , 再將 local bridge 加入到 virtual hub
+使用 bridgecreate 指令。
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&#x2F;Taichung&gt;bridgecreate Taichung</span><br><span class="line">BridgeCreate 命令 - 创建本地的网桥连接</span><br><span class="line">目标网桥的设备名称: eth1</span><br></pre></td></tr></table></figure>
+- 看local bridge 狀態
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&#x2F;Taichung&gt;bridgelist</span><br><span class="line">BridgeList 命令 - 获得当地网桥连接列表</span><br><span class="line">编号|虚拟 HUB 名称|网络适配器或 tap 设备名称|状态</span><br><span class="line">----+-------------+-------------------------+------</span><br><span class="line">1   |Taichung     |eth1                     |运行中</span><br></pre></td></tr></table></figure>
+<h2 id="dhcpserver">架設DHCP Server</h2>
+架構圖中有一台DHCP Server,主要驗證整個環境的應用;DHCP Server 發出的廣播封包是否可到達廣域網路的另一端。
+
+<ul>
+<li>此台機器 先忽略 防火牆防護<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -F</span><br></pre></td></tr></table></figure></li>
+<li>安裝 dnsmasq<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># yum instal dnsmasq</span><br></pre></td></tr></table></figure></li>
+<li>設定 dnsmasq ; /etc/dnsmasq.conf<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">port&#x3D;</span><br><span class="line">dhcp-leasefile&#x3D;&#x2F;tmp&#x2F;dnsmasq.leases</span><br><span class="line">interface&#x3D;eth1</span><br><span class="line">dhcp-range&#x3D;192.168.11.101,192.168.11.115,12h</span><br><span class="line">dhcp-option&#x3D;1,255.255.255.0 #subnet mask</span><br><span class="line">dhcp-option&#x3D;28,192.168.11.255 #broadcast</span><br><span class="line">dhcp-option&#x3D;3,192.168.11.250 #default gateway</span><br><span class="line">dhcp-option&#x3D;6,192.168.11.251 #DNS</span><br></pre></td></tr></table></figure></li>
+<li>啟動 dnsmasq<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;etc&#x2F;init.d&#x2F;dnsmasq start</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="install2">安裝SoftEther VPN  bridge及配</h2>
+- 安裝SoftEther VPN bridge
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># cd &#x2F;usr&#x2F;local&#x2F;src&#x2F;</span><br><span class="line"># wget http:&#x2F;&#x2F;www.softether-download.com&#x2F;files&#x2F;softether&#x2F;v4.24-9651-beta-2017.10.23-tree&#x2F;Linux&#x2F;SoftEther_VPN_Bridge&#x2F;32bit_-_Intel_x86&#x2F;softether-vpnbridge-v4.24-9651-beta-2017.10.23-linux-x86-32bit.tar.gz</span><br><span class="line"># tar zxf softether-vpnbridge-v4.24-9651-beta-2017.10.23-linux-x86-32bit.tar.gz</span><br><span class="line"># cd vpnbridge</span><br><span class="line"># make</span><br><span class="line"># cd ..</span><br><span class="line"># mv vpnbridge&#x2F; &#x2F;usr&#x2F;local&#x2F;</span><br><span class="line"># cd &#x2F;usr&#x2F;local&#x2F;vpnbridge&#x2F;</span><br><span class="line"># chmod 600 *</span><br><span class="line"># chmod 700 vpnserver</span><br><span class="line"># chmod 700 vpncmd</span><br></pre></td></tr></table></figure>
+- 建立 vpn bridge 啟動檔; /etc/init.d/vpnbridge
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;sh</span><br><span class="line"># chkconfig: 2345 99 01</span><br><span class="line"># description: SoftEther VPN Server</span><br><span class="line">DAEMON&#x3D;&#x2F;usr&#x2F;local&#x2F;vpnbridge&#x2F;vpnbridge</span><br><span class="line">LOCK&#x3D;&#x2F;var&#x2F;lock&#x2F;subsys&#x2F;vpnbridge</span><br><span class="line">test -x $DAEMON || exit 0</span><br><span class="line">case &quot;$1&quot; in</span><br><span class="line">start)</span><br><span class="line">$DAEMON start</span><br><span class="line">touch $LOCK</span><br><span class="line">;;</span><br><span class="line">stop)</span><br><span class="line">$DAEMON stop</span><br><span class="line">rm $LOCK</span><br><span class="line">;;</span><br><span class="line">restart)</span><br><span class="line">$DAEMON stop</span><br><span class="line">sleep 3</span><br><span class="line">$DAEMON start</span><br><span class="line">;;</span><br><span class="line">*)</span><br><span class="line">echo &quot;Usage: $0 &#123;start|stop|restart&#125;&quot;</span><br><span class="line">exit 1</span><br><span class="line">esac</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+- 在啟動 vpnbridge 之前 ,先使用vpncmd check 系統狀態 選擇 3 , 打上 check 指令。
+與上一節vpnserver 一樣。
+- 更改權限,設定開機啟動及啟動 vpnbridge
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">chmod a+x &#x2F;etc&#x2F;init.d&#x2F;vpnbridge  </span><br><span class="line">chkconfig --add vpnbridge  </span><br><span class="line">&#x2F;etc&#x2F;init.d&#x2F;vpnbridge start</span><br></pre></td></tr></table></figure>
+- 開始配置設定。 執行 /usr/local/vpnbridge/vpncmd
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># &#x2F;usr&#x2F;local&#x2F;vpnbridge&#x2F;vpncmd</span><br><span class="line">選擇1</span><br><span class="line">不用填寫 目标 IP 地址的主機名 , 指定虚擬 HUB 名稱 ,按 Enter 直接略過。</span><br></pre></td></tr></table></figure>
+- SoftEther bridge 預設已 建立 名為 bridge 的 virtual hub ,直接建立 local bridge
+- show virtual hub  list
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&gt;hublist</span><br><span class="line">HubList 命令 - 获取一个虚拟 HUB 列表</span><br><span class="line">项目        |价值</span><br><span class="line">------------+-------------------</span><br><span class="line">虚拟 HUB 名 |BRIDGE</span><br><span class="line">状态        |在线</span><br><span class="line">类型        |独立</span><br><span class="line">用户        |0</span><br><span class="line">组          |0</span><br><span class="line">会话        |2</span><br><span class="line">MAC 表      |5</span><br><span class="line">IP 表       |4</span><br><span class="line">登录次数    |0</span><br><span class="line">最后登录时间|2017-12-16 16:24:36</span><br><span class="line">最后通信时间|2017-12-16 18:05:06</span><br><span class="line">传输字节    |3,665,196</span><br><span class="line">传输数据包  |39,112</span><br><span class="line">命令成功完成。</span><br></pre></td></tr></table></figure>
+- 建立 local bridge 。 將 此Lab的 eth1 加入 local bridge , 再將 local bridge 加入到 virtual hub
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&gt;bridgecreate </span><br><span class="line">BridgeCreate 命令 - 创建本地的网桥连接</span><br><span class="line">网桥虚拟 HUB 名称: bridge</span><br><span class="line"></span><br><span class="line">目标网桥的设备名称: eth1</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&gt;bridgelist</span><br><span class="line">BridgeList 命令 - 获得当地网桥连接列表</span><br><span class="line">编号|虚拟 HUB 名称|网络适配器或 tap 设备名称|状态</span><br><span class="line">----+-------------+-------------------------+------</span><br><span class="line">1   |bridge       |eth1                     |运行中</span><br><span class="line">命令成功完成。</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="cascade">串接</h2>
+上面SoftEther VPN Server 與 Bridge 各自已安裝完成及設定好,現在要執行將 softEther Bridge 與 SoftEther Server 做串接(Cascade)。
+- 在SoftEther Bridge那一台 執行 vpncmd
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># &#x2F;usr&#x2F;local&#x2F;vpnbridge&#x2F;vpncmd</span><br><span class="line">選擇1</span><br></pre></td></tr></table></figure>
+- 交換到 virtual hub  為 bridge
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&gt;hub bridge</span><br></pre></td></tr></table></figure>
+- 建立聯結名稱為 VPN , 設定 VPN Server 為 192.168.88.62:443 , VPN Server 的 虛擬 HUB 為 Taichung, 及 設定聯結的使用者為 amy (在VPN server  階段建立的)
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&#x2F;BRIDGE&gt;cascadecreate</span><br><span class="line">CascadeCreate 命令 - 创建一个新的级联接续</span><br><span class="line">级联接续的名称: VPN</span><br><span class="line">目标 VPN Server 的主机名和端口号: 192.168.88.62:443</span><br><span class="line">目标虚拟 HUB 名称: Taichung</span><br><span class="line">连接使用的用户名: amy</span><br><span class="line">命令成功完成。</span><br></pre></td></tr></table></figure>
+- 指令為「cascadepasswordset」，並輸入串接連結名稱為「VPN」，接著輸入之前在VPN Server設定的使用者密碼，最後選擇使用「standard」
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&#x2F;BRIDGE&gt;cascadepasswordset VPN</span><br><span class="line">CascadePasswordSet 命令 - 将级联连接时所需的用户验证设置为密码验证</span><br><span class="line">请输入密码。要取消，请按下 Ctrl + D 键。</span><br><span class="line"></span><br><span class="line">密码    : **********</span><br><span class="line">确认输入: **********</span><br><span class="line"></span><br><span class="line">指定 standard 或者 radius: standard</span><br><span class="line">命令成功完成。</span><br></pre></td></tr></table></figure>
+- 執行 cascadeonline 指令 進行串接
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&#x2F;BRIDGE&gt;cascadeonline VPN</span><br><span class="line">CascadeOnline 命令 - 设置级联接续的在线状态</span><br><span class="line">命令成功完成。</span><br></pre></td></tr></table></figure>
+- 執行 cascadestatusget 指令獲取串接狀態
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">VPN Server&#x2F;BRIDGE&gt;cascadestatusget</span><br><span class="line">CascadeStatusGet 命令 - 获取级联的当前状态</span><br><span class="line">级联接续的名称: VPN</span><br><span class="line"></span><br><span class="line">项目               |价值</span><br><span class="line">-------------------+----------------------------------------</span><br><span class="line">VPN 连接设置名称   |VPN</span><br><span class="line">会话状态           |连接完成 (会话建立)</span><br><span class="line">VLAN ID            |－</span><br><span class="line">服务器名           |192.168.88.62</span><br><span class="line">端口号             |TCP 端口 443</span><br><span class="line">服务端产品名称     |SoftEther VPN Server (32 bit)</span><br><span class="line">服务端版本         |4.24</span><br><span class="line">服务端内部标号     |Build 9651</span><br><span class="line">连接开始时间       |2017年12月16日(星期六) 16点41分 7秒</span><br><span class="line">首次会话建立时间   |2017年12月16日(星期六) 16点41分 7秒</span><br><span class="line">当前会话建立时间   |2017年12月16日(星期六) 16点41分 7秒</span><br><span class="line">已建立的会话数     |1 次</span><br><span class="line">半双工 TCP 连接模式|否 (全双工模式)</span><br><span class="line">VoIP &#x2F; QoS 功能    |已启用</span><br><span class="line">TCP 连接数         |8</span><br><span class="line">TCP 连接数最大值   |8</span><br><span class="line">加密               |已启用 (算法: AES128-SHA)</span><br><span class="line">使用压缩           |否 (不压缩)</span><br><span class="line">物理底层协议       |Standard TCP&#x2F;IP (IPv4)</span><br><span class="line">支持 UDP 加速      |是</span><br><span class="line">UDP 加速已激活     |是</span><br><span class="line">会话名             |SID-AMY-2</span><br><span class="line">连接名             |CID-4</span><br><span class="line">会话密钥 (160 位)  |DDA3FED7FFCAC795C104C4CFC2982876AAE506E7</span><br><span class="line">网桥 &#x2F; 路由模式    |是</span><br><span class="line">监测模式           |否</span><br><span class="line">输出数据量         |4,947 字节</span><br><span class="line">输入数据量         |4,998 字节</span><br><span class="line">传出单播数据包     |3 数据包</span><br><span class="line">传出单播总量       |180 字节</span><br><span class="line">传出广播数据包     |6 数据包</span><br><span class="line">传出广播总量       |502 字节</span><br><span class="line">传入单播数据包     |3 数据包</span><br><span class="line">传入单播总量       |126 字节</span><br><span class="line">传入广播数据包     |0 数据包</span><br><span class="line">传入广播总量       |0 字节</span><br><span class="line">命令成功完成。</span><br></pre></td></tr></table></figure>
+<h2 id="checkclient">Client端驗證</h2>
+開啟client 端, 將網路設定DHCP 。重新整理網路,看是否有抓到192.168.11.x 這個網段的IP
+
+
+<h2 id="arduinoinfo">參考資料</h2>
+- [SoftEther VPN Components](https://www.softether.org/4-docs/1-manual/1._SoftEther_VPN_Overview/1.2_SoftEther_VPN_Components)
+- [VPN Processing Principle and Communication Method ](https://www.softether.org/4-docs/1-manual/1._SoftEther_VPN_Overview/1.4_VPN_Processing_Principle_and_Communication_Method)
+- [Local Bridges ](https://www.softether.org/4-docs/1-manual/3._SoftEther_VPN_Server_Manual/3.6_Local_Bridges)
+- [網管人-安裝SoftEther VPN　活用樹莓派自造翻牆機](http://www.netadmin.com.tw/article_content.aspx?sn=1708080001&jump=2)
+- [網管人-樹莓派兩片架窮人閘道器　大玩L2 Bridge VPN](http://www.netadmin.com.tw/article_content.aspx?sn=1711070001)
+- [Install on Linux and Initial Configurations](https://www.softether.org/4-docs/1-manual/9._Installing_SoftEther_VPN_Bridge/9.3_Install_on_Linux_and_Initial_Configurations)
+- [使用 SoftEther 建立 Layer2 橋接的 Site to Site VPN 通道](https://www.youtube.com/watch?v=WHfsUDqtbiM)
+- [輕量型DHCP server - dnsmasq](http://www.ichiayi.com/wiki/tech/dnsmasq)
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>歡迎關注我的其它發布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/SoftEther-VPN/" rel="tag"># SoftEther-VPN</a>
+              <a href="/tags/VPN/" rel="tag"># VPN</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/11/27/2017-11-27_KVM-in-VMware-Esx/" rel="prev" title="KVM-in-VMware-Esxi">
+      <i class="fa fa-chevron-left"></i> KVM-in-VMware-Esxi
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/02/04/2018-02-04_minikube-on-Windows-10/" rel="next" title="minikube on Windows 10">
+      minikube on Windows 10 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#depolymap"><span class="nav-number">1.</span> <span class="nav-text">架構說明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#install"><span class="nav-number">2.</span> <span class="nav-text">安裝SoftEther VPN Server 及配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dhcpserver"><span class="nav-number">3.</span> <span class="nav-text">架設DHCP Server</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#install2"><span class="nav-number">4.</span> <span class="nav-text">安裝SoftEther VPN  bridge及配</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cascade"><span class="nav-number">5.</span> <span class="nav-text">串接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#checkclient"><span class="nav-number">6.</span> <span class="nav-text">Client端驗證</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#arduinoinfo"><span class="nav-number">7.</span> <span class="nav-text">參考資料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Alicode</p>
+  <div class="site-description" itemprop="description">因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alicode</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>
