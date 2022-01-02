@@ -23,7 +23,7 @@
   <meta name="description" content="AWS_VPC-LAB1本篇主要簡單建立VPC過程：如下圖  建立VPC (Virtual Private Cloud) 建立IGW (Internet Gateway) 建立Routing Table 建立Subnet 將路由表與Subnet建立關聯 建立Security Group 建立EC2並測試 清理Lab所建立的所有元件   建立VPC(Virtual Private Cloud)建立V">
 <meta property="og:type" content="article">
 <meta property="og:title" content="AWS_VPC-LAB1">
-<meta property="og:url" content="http://example.com/2021/12/29/2021-12-29-AWS_VPC-LAB1/index.html">
+<meta property="og:url" content="http://example.com/2021/12/31/20121-12-31-AWS_VPC-LAB1/index.html">
 <meta property="og:site_name" content="阿里發發電腦筆記">
 <meta property="og:description" content="AWS_VPC-LAB1本篇主要簡單建立VPC過程：如下圖  建立VPC (Virtual Private Cloud) 建立IGW (Internet Gateway) 建立Routing Table 建立Subnet 將路由表與Subnet建立關聯 建立Security Group 建立EC2並測試 清理Lab所建立的所有元件   建立VPC(Virtual Private Cloud)建立V">
 <meta property="og:locale" content="zh_TW">
@@ -43,15 +43,17 @@
 <meta property="og:image" content="https://i.imgur.com/dMJHGvK.png">
 <meta property="og:image" content="https://i.imgur.com/gm5iCnt.png">
 <meta property="og:image" content="https://i.imgur.com/JzUPZls.png">
-<meta property="article:published_time" content="2021-12-28T16:00:00.000Z">
-<meta property="article:modified_time" content="2022-01-02T10:21:10.278Z">
+<meta property="og:image" content="https://i.imgur.com/I03Ov4f.png">
+<meta property="og:image" content="https://i.imgur.com/ZdSrygI.png">
+<meta property="article:published_time" content="2021-12-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-02T16:24:02.718Z">
 <meta property="article:author" content="Alicode">
 <meta property="article:tag" content="AWS">
 <meta property="article:tag" content="Cloud">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://i.imgur.com/ysYu3ey.png">
 
-<link rel="canonical" href="http://example.com/2021/12/29/2021-12-29-AWS_VPC-LAB1/">
+<link rel="canonical" href="http://example.com/2021/12/31/20121-12-31-AWS_VPC-LAB1/">
 
 
 <script id="page-configurations">
@@ -204,7 +206,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/29/2021-12-29-AWS_VPC-LAB1/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/31/20121-12-31-AWS_VPC-LAB1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -227,14 +229,14 @@
               </span>
               <span class="post-meta-item-text">發表於</span>
 
-              <time title="創建時間：2021-12-29 00:00:00" itemprop="dateCreated datePublished" datetime="2021-12-29T00:00:00+08:00">2021-12-29</time>
+              <time title="創建時間：2021-12-31 00:00:00" itemprop="dateCreated datePublished" datetime="2021-12-31T00:00:00+08:00">2021-12-31</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2022-01-02 18:21:10" itemprop="dateModified" datetime="2022-01-02T18:21:10+08:00">2022-01-02</time>
+                <time title="修改時間：2022-01-03 00:24:02" itemprop="dateModified" datetime="2022-01-03T00:24:02+08:00">2022-01-03</time>
               </span>
 
           
@@ -305,8 +307,16 @@
 <li>測試 連進 EC2<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -i vpc-Lab1.pem ec2-user@15.152.54.18</span><br></pre></td></tr></table></figure>
 連進去後, 測試是否能聯外<br><img src="https://i.imgur.com/JzUPZls.png"></li>
 </ul>
-<h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10262172l">Day 5 網路寶石：AWS VPC 架構 Routes &amp; Security (上) </a></li>
+<h2 id="清理"><a href="#清理" class="headerlink" title="清理"></a>清理</h2><p>AWS 的價值貴於方便與彈性,使用多少算多少錢,因此這個只是個LAB ,不用時記得將他清理刪除。</p>
+<ul>
+<li><p>將EC2 terminated</p>
+<p><img src="https://i.imgur.com/I03Ov4f.png"></p>
+</li>
+<li><p>將指定VPC刪除, AWS 會自動地與指定的VPC相關聯的物件都給刪掉。</p>
+<p><img src="https://i.imgur.com/ZdSrygI.png"></p>
+<h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1></li>
+<li><p><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10262172l">Day 5 網路寶石：AWS VPC 架構 Routes &amp; Security (上) </a></p>
+</li>
 </ul>
 
     </div>
@@ -346,13 +356,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/12/05/hello-world/" rel="prev" title="Hello World">
-      <i class="fa fa-chevron-left"></i> Hello World
+    <a href="/2021/12/29/2021-12-29-AWS_VPC-LAB1/" rel="prev" title="AWS_VPC-LAB1">
+      <i class="fa fa-chevron-left"></i> AWS_VPC-LAB1
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/12/31/20121-12-31-AWS_VPC-LAB1/" rel="next" title="AWS_VPC-LAB1">
-      AWS_VPC-LAB1 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -411,7 +418,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AWS-VPC-LAB1"><span class="nav-number">1.</span> <span class="nav-text">AWS_VPC-LAB1</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BVPC-Virtual-Private-Cloud"><span class="nav-number">1.1.</span> <span class="nav-text">建立VPC(Virtual Private Cloud)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B-igw"><span class="nav-number">1.2.</span> <span class="nav-text">建立 igw</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BRouting-Table"><span class="nav-number">1.3.</span> <span class="nav-text">建立Routing Table</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BSubnet"><span class="nav-number">1.4.</span> <span class="nav-text">建立Subnet</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%87%E8%B7%AF%E7%94%B1%E8%A1%A8%E8%88%87Subnet%E5%BB%BA%E7%AB%8B%E9%97%9C%E8%81%AF"><span class="nav-number">1.5.</span> <span class="nav-text">將路由表與Subnet建立關聯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BSecurity-Group-SG"><span class="nav-number">1.6.</span> <span class="nav-text">建立Security Group(SG)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BEC2-%E5%8F%8A%E6%B8%AC%E8%A9%A6"><span class="nav-number">1.7.</span> <span class="nav-text">建立EC2 及測試</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%AC%E8%A9%A6"><span class="nav-number">1.7.1.</span> <span class="nav-text">測試</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E8%B3%87%E6%96%99"><span class="nav-number">2.</span> <span class="nav-text">參考資料</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AWS-VPC-LAB1"><span class="nav-number">1.</span> <span class="nav-text">AWS_VPC-LAB1</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BVPC-Virtual-Private-Cloud"><span class="nav-number">1.1.</span> <span class="nav-text">建立VPC(Virtual Private Cloud)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B-igw"><span class="nav-number">1.2.</span> <span class="nav-text">建立 igw</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BRouting-Table"><span class="nav-number">1.3.</span> <span class="nav-text">建立Routing Table</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BSubnet"><span class="nav-number">1.4.</span> <span class="nav-text">建立Subnet</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%87%E8%B7%AF%E7%94%B1%E8%A1%A8%E8%88%87Subnet%E5%BB%BA%E7%AB%8B%E9%97%9C%E8%81%AF"><span class="nav-number">1.5.</span> <span class="nav-text">將路由表與Subnet建立關聯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BSecurity-Group-SG"><span class="nav-number">1.6.</span> <span class="nav-text">建立Security Group(SG)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BEC2-%E5%8F%8A%E6%B8%AC%E8%A9%A6"><span class="nav-number">1.7.</span> <span class="nav-text">建立EC2 及測試</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%AC%E8%A9%A6"><span class="nav-number">1.7.1.</span> <span class="nav-text">測試</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E7%90%86"><span class="nav-number">1.8.</span> <span class="nav-text">清理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E8%B3%87%E6%96%99"><span class="nav-number">2.</span> <span class="nav-text">參考資料</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
