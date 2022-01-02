@@ -183,6 +183,97 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/11/27/2017-11-27_KVM-in-VMware-Esx/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/11/27/2017-11-27_KVM-in-VMware-Esx/" class="post-title-link" itemprop="url">KVM-in-VMware-Esxi</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2017-11-27 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-27T00:00:00+08:00">2017-11-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-18 12:31:48" itemprop="dateModified" datetime="2021-12-18T12:31:48+08:00">2021-12-18</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="KVM-install"><a href="#KVM-install" class="headerlink" title="KVM install"></a>KVM install</h1><p>KVM 全名為 <strong>Kernel-Based Virtual Machine</strong>,是一個用於Linux核心中的虛擬化基礎設施。<br>本單元主要演示安裝KVM過程,主要利用VMware Esxi 平台建立Netsed hypervisors環境,即是 在 Esxi 平台建立一個 虛擬機 ,在此虛擬機安裝KVM ,再由kvm 建立一台虛擬機。</p>
+<h2 id="環境需求"><a href="#環境需求" class="headerlink" title="環境需求"></a>環境需求</h2><ul>
+<li>實體機的 CPU 需支持 Intel (<strong>Intel Virtualization Technology, Intel VT-x</strong>); AMD (<strong>AMD Secure Virtual Machine, AMD</strong>)</li>
+<li> VMware ESXi 5 或 6 </li>
+<li> Ubuntu 16.04 Desktop LTS ,<a href="https://www.ubuntu-tw.org/modules/tinyd0/%22target=%22_blank">下載點</a></li>
+</ul>
+<h2 id="步驟"><a href="#步驟" class="headerlink" title="步驟"></a>步驟</h2><ol>
+<li>在esxi 平台上建立虛擬機，主要關鍵,勾選硬體虛擬化項目<strong>向Guest OS 公開硬體協助虛擬化</strong>,此操作可以在 <strong>ESXi Web Client or ESXi Host Client</strong>下完成。<br><img src="https://i.imgur.com/akOCDSI.gif" alt="如圖示說明"></li>
+<li>網路部分,需要將VSS Security Policies的<strong>Promiscuous mode</strong> 設為允許。此功能相當於HUB,將port 收到的封包,會廣播向其它的Port傳送<br><img src="https://i.imgur.com/mz6ppy6.gif" alt="Promiscuous mode"></li>
+</ol>
+<p>3.之後,虛擬機安裝OS ,Ubuntu 16.04 Desktop LTS<br>4.之後,安裝完OS。先確定以下項目,每項都必須確認無誤後,才能做下一步</p>
+<ul>
+<li>VM是否支援CPU虛擬化<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -E -i &#39;vmx|svm&#39; &#x2F;etc&#x2F;cpuinfo</span><br></pre></td></tr></table></figure></li>
+<li>確認kvm是否安奘<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-get install cpu-checker</span><br><span class="line">kvm-ok</span><br></pre></td></tr></table></figure></li>
+<li>確認是否有載入KVM 相關模組<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsmod|grep kvm</span><br></pre></td></tr></table></figure></li>
+</ul>
+<ol start="5">
+<li>安裝 libvirt,及看使用者(這邊以 andy)是否在指定群組<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-get install qemu-kvm libvirt-bin</span><br><span class="line">grep andy &#x2F;etc&#x2F;group</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">adm:x:4:syslog,andy</span><br><span class="line">cdrom:x:24:andy</span><br><span class="line">sudo:x:27:andy</span><br><span class="line">dip:x:30:andy</span><br><span class="line">plugdev:x:46:andy</span><br><span class="line">lpadmin:x:113:andy</span><br><span class="line">andy:x:1000:</span><br><span class="line">sambashare:x:128:andy</span><br><span class="line">libvirtd:x:130:andy</span><br></pre></td></tr></table></figure></li>
+<li>安裝 virt-manager , bridge-utils <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install virt-manager bridge-utils</span><br></pre></td></tr></table></figure></li>
+<li>開始執行virt-manager 建立虛擬機,會跳出以下圖示<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo virt-manager</span><br></pre></td></tr></table></figure>
+<img src="https://i.imgur.com/LlPqEU0.gif" alt="virt-manager"><h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2></li>
+</ol>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://www.vladan.fr/nested-esxi-6-in-a-lab/">Nested ESXi 6 in a Lab</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.ntueees.tp.edu.tw/wordpress/?p=2981">Fedora 17 KVM於ESXi 5.1參數設定與安裝VMTools</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
     <link itemprop="mainEntityOfPage" href="http://example.com/2017/11/08/base-Flask-Config-%E8%BC%89%E5%85%A5%E6%96%B9%E5%BC%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1211,14 +1302,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-count">18</span>
           <span class="site-state-item-name">文章</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">標籤</span></a>
       </div>
   </nav>
@@ -1245,7 +1336,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

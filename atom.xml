@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2021-12-05T12:17:33.708Z</updated>
+  <updated>2022-01-02T10:21:10.278Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>AWS_VPC-LAB1</title>
+    <link href="http://example.com/2021/12/29/2021-12-29-AWS_VPC-LAB1/"/>
+    <id>http://example.com/2021/12/29/2021-12-29-AWS_VPC-LAB1/</id>
+    <published>2021-12-28T16:00:00.000Z</published>
+    <updated>2022-01-02T10:21:10.278Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="AWS-VPC-LAB1"><a href="#AWS-VPC-LAB1" class="headerlink" title="AWS_VPC-LAB1"></a>AWS_VPC-LAB1</h1><p>本篇主要簡單建立VPC過程：如下圖</p><ul><li>建立VPC (<strong>Virtual Private Cloud</strong>)</li><li>建立IGW (Internet Gateway)</li><li>建立Routing Table</li><li>建立Subnet</li><li>將路由表與Subnet建立關聯</li><li>建立Security Group</li><li>建立EC2並測試</li><li>清理Lab所建立的所有元件</li></ul><p><img src="https://i.imgur.com/ysYu3ey.png" alt="AWS_VPC-Public"></p><h2 id="建立VPC-Virtual-Private-Cloud"><a href="#建立VPC-Virtual-Private-Cloud" class="headerlink" title="建立VPC(Virtual Private Cloud)"></a>建立VPC(<strong>Virtual Private Cloud</strong>)</h2><p>建立VPC並命名為 <strong>VPC-LAB1</strong>,並劃分一個大網段 <strong>10.1.0.0/16</strong><br><img src="https://i.imgur.com/w2iuoqO.png" alt="VPC-LAB1"></p><h2 id="建立-igw"><a href="#建立-igw" class="headerlink" title="建立 igw"></a>建立 igw</h2><p>建立igw 並命名為 <strong>igw-Lab</strong>,並連線到 <strong>VPC-LAB1</strong><br><img src="https://i.imgur.com/BdKKYE8.png" alt="igw-Lab0"><br><img src="https://i.imgur.com/MCZkTsP.png" alt="igw-LAb1"><br><img src="https://i.imgur.com/7BMJIsG.png" alt="igw-Lab2"></p><h2 id="建立Routing-Table"><a href="#建立Routing-Table" class="headerlink" title="建立Routing Table"></a>建立Routing Table</h2><ul><li><p>Routing Table:  <strong>AZ1-Pub-Rtable</strong></p><p><img src="https://i.imgur.com/Z6EGBlW.png"></p></li><li><p>編輯路由表, 新增一筆Default Route 到 igw-Lab<br><img src="https://i.imgur.com/RCS6NNm.png"></p><h2 id="建立Subnet"><a href="#建立Subnet" class="headerlink" title="建立Subnet"></a>建立Subnet</h2></li><li><p>選擇剛建立VPC :  <strong>VPC-LAB1</strong><br><img src="https://i.imgur.com/FXZtg5Z.png"></p></li><li><p>Subnet 名稱： <strong>AZ1-PubSubnet</strong></p><ul><li>選定AZ區域:  選擇日本大阪一個AZ(<strong>ap-northeast-3a</strong>)</li><li>分配網段:  <strong>10.1.1.0/24</strong><br><img src="https://i.imgur.com/6LDstYt.png"></li></ul></li></ul><h2 id="將路由表與Subnet建立關聯"><a href="#將路由表與Subnet建立關聯" class="headerlink" title="將路由表與Subnet建立關聯"></a>將路由表與Subnet建立關聯</h2><p><img src="https://i.imgur.com/b3dKqlC.png"></p><h2 id="建立Security-Group-SG"><a href="#建立Security-Group-SG" class="headerlink" title="建立Security Group(SG)"></a>建立Security Group(SG)</h2><p>建立SG 名為 <strong>AZ1_Pub_sg1</strong>,新增兩筆傳入規則</p><ul><li>任何來源 0.0.0.0/0 ,tcp port 22 都允許</li><li>任何來源 0.0.0.0/0 ,ICMP-IPv4  <img src="https://i.imgur.com/Yiwu5SL.png"></li></ul><blockquote><blockquote><p>AWS的 SG 是屬於<strong>StateFul</strong>,都是綁定在<strong>ENI</strong>(Elastic Network Interface: 網卡)上(相當於Linux Iptable角色);NACL 屬於 <strong>Stateless</strong>,都是綁定上 Subnet</p></blockquote></blockquote><h2 id="建立EC2-及測試"><a href="#建立EC2-及測試" class="headerlink" title="建立EC2 及測試"></a>建立EC2 及測試</h2><p>這邊EC2簡單建立, 只是測試VPC所建立的元件是否正確。</p><ul><li>透過public ip 使用 ssh 加上 key 的方式連進來</li><li>在EC2 上聯外</li></ul><p>以下圖示只要選擇 Ｎetwork: <strong>VPC-LAB1</strong> , Subnet: <strong>AZ1-PubSubnet</strong> ,Auto-assign-Public-IP: <strong>Enable</strong> (igw 會DHCP分配一個IP),其他預設即可</p><p><img src="https://i.imgur.com/8p0tlOL.png"></p><p>選擇剛建立的security group: AZ1_Pub_sg1</p><p><img src="https://i.imgur.com/vv5rsLh.png"></p><p>建立ssh-key , 主要是安全地連入EC2</p><p><img src="https://i.imgur.com/dMJHGvK.png"></p><p>建立好 EC2, 查看IGW 分配的IP</p><p><img src="https://i.imgur.com/gm5iCnt.png"></p><h3 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h3><ul><li>測試 連進 EC2<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -i vpc-Lab1.pem ec2-user@15.152.54.18</span><br></pre></td></tr></table></figure>連進去後, 測試是否能聯外<br><img src="https://i.imgur.com/JzUPZls.png"></li></ul><h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1><ul><li><a href="https://ithelp.ithome.com.tw/articles/10262172l">Day 5 網路寶石：AWS VPC 架構 Routes &amp; Security (上) </a></li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;AWS-VPC-LAB1&quot;&gt;&lt;a href=&quot;#AWS-VPC-LAB1&quot; class=&quot;headerlink&quot; title=&quot;AWS_VPC-LAB1&quot;&gt;&lt;/a&gt;AWS_VPC-LAB1&lt;/h1&gt;&lt;p&gt;本篇主要簡單建立VPC過程：如下圖&lt;/p&gt;
+&lt;ul&gt;
+&lt;li</summary>
+      
+    
+    
+    
+    
+    <category term="AWS" scheme="http://example.com/tags/AWS/"/>
+    
+    <category term="Cloud" scheme="http://example.com/tags/Cloud/"/>
+    
+  </entry>
   
   <entry>
     <title>Hello World</title>

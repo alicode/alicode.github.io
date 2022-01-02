@@ -183,6 +183,130 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/29/2021-12-29-AWS_VPC-LAB1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/12/29/2021-12-29-AWS_VPC-LAB1/" class="post-title-link" itemprop="url">AWS_VPC-LAB1</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2021-12-29 00:00:00" itemprop="dateCreated datePublished" datetime="2021-12-29T00:00:00+08:00">2021-12-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2022-01-02 18:21:10" itemprop="dateModified" datetime="2022-01-02T18:21:10+08:00">2022-01-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="AWS-VPC-LAB1"><a href="#AWS-VPC-LAB1" class="headerlink" title="AWS_VPC-LAB1"></a>AWS_VPC-LAB1</h1><p>本篇主要簡單建立VPC過程：如下圖</p>
+<ul>
+<li>建立VPC (<strong>Virtual Private Cloud</strong>)</li>
+<li>建立IGW (Internet Gateway)</li>
+<li>建立Routing Table</li>
+<li>建立Subnet</li>
+<li>將路由表與Subnet建立關聯</li>
+<li>建立Security Group</li>
+<li>建立EC2並測試</li>
+<li>清理Lab所建立的所有元件</li>
+</ul>
+<p><img src="https://i.imgur.com/ysYu3ey.png" alt="AWS_VPC-Public"></p>
+<h2 id="建立VPC-Virtual-Private-Cloud"><a href="#建立VPC-Virtual-Private-Cloud" class="headerlink" title="建立VPC(Virtual Private Cloud)"></a>建立VPC(<strong>Virtual Private Cloud</strong>)</h2><p>建立VPC並命名為 <strong>VPC-LAB1</strong>,並劃分一個大網段 <strong>10.1.0.0/16</strong><br><img src="https://i.imgur.com/w2iuoqO.png" alt="VPC-LAB1"></p>
+<h2 id="建立-igw"><a href="#建立-igw" class="headerlink" title="建立 igw"></a>建立 igw</h2><p>建立igw 並命名為 <strong>igw-Lab</strong>,並連線到 <strong>VPC-LAB1</strong><br><img src="https://i.imgur.com/BdKKYE8.png" alt="igw-Lab0"><br><img src="https://i.imgur.com/MCZkTsP.png" alt="igw-LAb1"><br><img src="https://i.imgur.com/7BMJIsG.png" alt="igw-Lab2"></p>
+<h2 id="建立Routing-Table"><a href="#建立Routing-Table" class="headerlink" title="建立Routing Table"></a>建立Routing Table</h2><ul>
+<li><p>Routing Table:  <strong>AZ1-Pub-Rtable</strong></p>
+<p><img src="https://i.imgur.com/Z6EGBlW.png"></p>
+</li>
+<li><p>編輯路由表, 新增一筆Default Route 到 igw-Lab<br><img src="https://i.imgur.com/RCS6NNm.png"></p>
+<h2 id="建立Subnet"><a href="#建立Subnet" class="headerlink" title="建立Subnet"></a>建立Subnet</h2></li>
+<li><p>選擇剛建立VPC :  <strong>VPC-LAB1</strong><br><img src="https://i.imgur.com/FXZtg5Z.png"></p>
+</li>
+<li><p>Subnet 名稱： <strong>AZ1-PubSubnet</strong></p>
+<ul>
+<li>選定AZ區域:  選擇日本大阪一個AZ(<strong>ap-northeast-3a</strong>)</li>
+<li>分配網段:  <strong>10.1.1.0/24</strong><br><img src="https://i.imgur.com/6LDstYt.png"></li>
+</ul>
+</li>
+</ul>
+<h2 id="將路由表與Subnet建立關聯"><a href="#將路由表與Subnet建立關聯" class="headerlink" title="將路由表與Subnet建立關聯"></a>將路由表與Subnet建立關聯</h2><p><img src="https://i.imgur.com/b3dKqlC.png"></p>
+<h2 id="建立Security-Group-SG"><a href="#建立Security-Group-SG" class="headerlink" title="建立Security Group(SG)"></a>建立Security Group(SG)</h2><p>建立SG 名為 <strong>AZ1_Pub_sg1</strong>,新增兩筆傳入規則</p>
+<ul>
+<li>任何來源 0.0.0.0/0 ,tcp port 22 都允許</li>
+<li>任何來源 0.0.0.0/0 ,ICMP-IPv4  <img src="https://i.imgur.com/Yiwu5SL.png"></li>
+</ul>
+<blockquote>
+<blockquote>
+<p>AWS的 SG 是屬於<strong>StateFul</strong>,都是綁定在<strong>ENI</strong>(Elastic Network Interface: 網卡)上(相當於Linux Iptable角色);NACL 屬於 <strong>Stateless</strong>,都是綁定上 Subnet</p>
+</blockquote>
+</blockquote>
+<h2 id="建立EC2-及測試"><a href="#建立EC2-及測試" class="headerlink" title="建立EC2 及測試"></a>建立EC2 及測試</h2><p>這邊EC2簡單建立, 只是測試VPC所建立的元件是否正確。</p>
+<ul>
+<li>透過public ip 使用 ssh 加上 key 的方式連進來</li>
+<li>在EC2 上聯外</li>
+</ul>
+<p>以下圖示只要選擇 Ｎetwork: <strong>VPC-LAB1</strong> , Subnet: <strong>AZ1-PubSubnet</strong> ,Auto-assign-Public-IP: <strong>Enable</strong> (igw 會DHCP分配一個IP),其他預設即可</p>
+<p><img src="https://i.imgur.com/8p0tlOL.png"></p>
+<p>選擇剛建立的security group: AZ1_Pub_sg1</p>
+<p><img src="https://i.imgur.com/vv5rsLh.png"></p>
+<p>建立ssh-key , 主要是安全地連入EC2</p>
+<p><img src="https://i.imgur.com/dMJHGvK.png"></p>
+<p>建立好 EC2, 查看IGW 分配的IP</p>
+<p><img src="https://i.imgur.com/gm5iCnt.png"></p>
+<h3 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h3><ul>
+<li>測試 連進 EC2<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -i vpc-Lab1.pem ec2-user@15.152.54.18</span><br></pre></td></tr></table></figure>
+連進去後, 測試是否能聯外<br><img src="https://i.imgur.com/JzUPZls.png"></li>
+</ul>
+<h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10262172l">Day 5 網路寶石：AWS VPC 架構 Routes &amp; Security (上) </a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
     <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/05/hello-world/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1111,97 +1235,6 @@ vpnserver  啟動腳本; /etc/init.d/vpnserver
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2017/11/27/2017-11-27_KVM-in-VMware-Esx/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Alicode">
-      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="阿里發發電腦筆記">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/11/27/2017-11-27_KVM-in-VMware-Esx/" class="post-title-link" itemprop="url">KVM-in-VMware-Esxi</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">發表於</span>
-
-              <time title="創建時間：2017-11-27 00:00:00" itemprop="dateCreated datePublished" datetime="2017-11-27T00:00:00+08:00">2017-11-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2021-12-18 12:31:48" itemprop="dateModified" datetime="2021-12-18T12:31:48+08:00">2021-12-18</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="KVM-install"><a href="#KVM-install" class="headerlink" title="KVM install"></a>KVM install</h1><p>KVM 全名為 <strong>Kernel-Based Virtual Machine</strong>,是一個用於Linux核心中的虛擬化基礎設施。<br>本單元主要演示安裝KVM過程,主要利用VMware Esxi 平台建立Netsed hypervisors環境,即是 在 Esxi 平台建立一個 虛擬機 ,在此虛擬機安裝KVM ,再由kvm 建立一台虛擬機。</p>
-<h2 id="環境需求"><a href="#環境需求" class="headerlink" title="環境需求"></a>環境需求</h2><ul>
-<li>實體機的 CPU 需支持 Intel (<strong>Intel Virtualization Technology, Intel VT-x</strong>); AMD (<strong>AMD Secure Virtual Machine, AMD</strong>)</li>
-<li> VMware ESXi 5 或 6 </li>
-<li> Ubuntu 16.04 Desktop LTS ,<a href="https://www.ubuntu-tw.org/modules/tinyd0/%22target=%22_blank">下載點</a></li>
-</ul>
-<h2 id="步驟"><a href="#步驟" class="headerlink" title="步驟"></a>步驟</h2><ol>
-<li>在esxi 平台上建立虛擬機，主要關鍵,勾選硬體虛擬化項目<strong>向Guest OS 公開硬體協助虛擬化</strong>,此操作可以在 <strong>ESXi Web Client or ESXi Host Client</strong>下完成。<br><img src="https://i.imgur.com/akOCDSI.gif" alt="如圖示說明"></li>
-<li>網路部分,需要將VSS Security Policies的<strong>Promiscuous mode</strong> 設為允許。此功能相當於HUB,將port 收到的封包,會廣播向其它的Port傳送<br><img src="https://i.imgur.com/mz6ppy6.gif" alt="Promiscuous mode"></li>
-</ol>
-<p>3.之後,虛擬機安裝OS ,Ubuntu 16.04 Desktop LTS<br>4.之後,安裝完OS。先確定以下項目,每項都必須確認無誤後,才能做下一步</p>
-<ul>
-<li>VM是否支援CPU虛擬化<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -E -i &#39;vmx|svm&#39; &#x2F;etc&#x2F;cpuinfo</span><br></pre></td></tr></table></figure></li>
-<li>確認kvm是否安奘<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-get install cpu-checker</span><br><span class="line">kvm-ok</span><br></pre></td></tr></table></figure></li>
-<li>確認是否有載入KVM 相關模組<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsmod|grep kvm</span><br></pre></td></tr></table></figure></li>
-</ul>
-<ol start="5">
-<li>安裝 libvirt,及看使用者(這邊以 andy)是否在指定群組<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">apt-get install qemu-kvm libvirt-bin</span><br><span class="line">grep andy &#x2F;etc&#x2F;group</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">adm:x:4:syslog,andy</span><br><span class="line">cdrom:x:24:andy</span><br><span class="line">sudo:x:27:andy</span><br><span class="line">dip:x:30:andy</span><br><span class="line">plugdev:x:46:andy</span><br><span class="line">lpadmin:x:113:andy</span><br><span class="line">andy:x:1000:</span><br><span class="line">sambashare:x:128:andy</span><br><span class="line">libvirtd:x:130:andy</span><br></pre></td></tr></table></figure></li>
-<li>安裝 virt-manager , bridge-utils <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install virt-manager bridge-utils</span><br></pre></td></tr></table></figure></li>
-<li>開始執行virt-manager 建立虛擬機,會跳出以下圖示<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo virt-manager</span><br></pre></td></tr></table></figure>
-<img src="https://i.imgur.com/LlPqEU0.gif" alt="virt-manager"><h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2></li>
-</ol>
-<ul>
-<li><a target="_blank" rel="noopener" href="http://www.vladan.fr/nested-esxi-6-in-a-lab/">Nested ESXi 6 in a Lab</a></li>
-<li><a target="_blank" rel="noopener" href="http://www.ntueees.tp.edu.tw/wordpress/?p=2981">Fedora 17 KVM於ESXi 5.1參數設定與安裝VMTools</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1271,14 +1304,14 @@ vpnserver  啟動腳本; /etc/init.d/vpnserver
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-count">18</span>
           <span class="site-state-item-name">文章</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">標籤</span></a>
       </div>
   </nav>
@@ -1305,7 +1338,7 @@ vpnserver  啟動腳本; /etc/init.d/vpnserver
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
