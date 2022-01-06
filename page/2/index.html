@@ -183,6 +183,105 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2018/02/04/2018-02-04_minikube-on-Windows-10/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2018/02/04/2018-02-04_minikube-on-Windows-10/" class="post-title-link" itemprop="url">minikube on Windows 10</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2018-02-04 00:00:00" itemprop="dateCreated datePublished" datetime="2018-02-04T00:00:00+08:00">2018-02-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-18 12:31:48" itemprop="dateModified" datetime="2021-12-18T12:31:48+08:00">2021-12-18</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="安裝"><a href="#安裝" class="headerlink" title="安裝"></a>安裝</h2><ul>
+<li>事先裝好VirtualBox</li>
+<li>下載 minikube.exe <a target="_blank" rel="noopener" href="https://github.com/kubernetes/minikube/releases">https://github.com/kubernetes/minikube/releases</a></li>
+<li>下載<a target="_blank" rel="noopener" href="https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/windows/amd64/kubectl.exe">kubectl.exe</a></li>
+<li>minikube 開始<br>開始cmd, 執行以命令後, 在vitrtualbox會自動建立一個名為minikube的VM<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">minikube.exe  get-k8s-versions</span><br><span class="line">minikube.exe  start</span><br></pre></td></tr></table></figure>
+<h2 id="minikube-Web-介面"><a href="#minikube-Web-介面" class="headerlink" title="minikube Web 介面"></a>minikube Web 介面</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube dashboard</span><br></pre></td></tr></table></figure>
+會自動開啟  WEB ,位置大概是在 <a target="_blank" rel="noopener" href="http://192.168.99.100:30000/">http://192.168.99.100:30000</a></li>
+</ul>
+<h2 id="開始部屬APP-deployment"><a href="#開始部屬APP-deployment" class="headerlink" title="開始部屬APP (deployment)"></a>開始部屬APP (deployment)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kubectl.exe run mynginx --image&#x3D;nginx --port&#x3D;80</span><br><span class="line">kubectl.exe get pods</span><br><span class="line">kubectl get node -o wide</span><br><span class="line">kubectl.exe  get deployments</span><br></pre></td></tr></table></figure>
+<h2 id="發布APP-services"><a href="#發布APP-services" class="headerlink" title="發布APP (services)"></a>發布APP (services)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl.exe expose deployment mynginx --type&#x3D;&quot;NodePort&quot;</span><br><span class="line">kubectl.exe  get services</span><br></pre></td></tr></table></figure>
+<h2 id="測試存取APP"><a href="#測試存取APP" class="headerlink" title="測試存取APP"></a>測試存取APP</h2><ul>
+<li><p>kubectl.exe  get services</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE</span><br><span class="line">kubernetes   ClusterIP   10.96.0.1       &lt;none&gt;        443&#x2F;TCP        54m</span><br><span class="line">mynginx      NodePort    10.100.18.218   &lt;none&gt;        80:30213&#x2F;TCP   7m</span><br></pre></td></tr></table></figure></li>
+<li><p>看 k8s Master 的 IP 為何</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube service mynginx --url</span><br></pre></td></tr></table></figure></li>
+<li><p>curl <a target="_blank" rel="noopener" href="http://192.168.99.100:30213/">http://192.168.99.100:30213</a></p>
+</li>
+</ul>
+<h2 id="探索APP"><a href="#探索APP" class="headerlink" title="探索APP"></a>探索APP</h2><ul>
+<li><p>list pods 詳細資訊</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl.exe  describe pods</span><br></pre></td></tr></table></figure></li>
+<li><p>依上述所列的Name即是pod的名稱,看 pod 裡 log 相關資訊</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl.exe  logs pod-Name</span><br></pre></td></tr></table></figure></li>
+<li><p>到 pods container 執行命令列</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl.exe exec -it pod-Name bash</span><br></pre></td></tr></table></figure></li>
+<li><p>刪除 pods , servies </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl.exe  delete  deployment mynginx</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl.exe  delete service mynginx</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://kubernetes.io/docs/tasks/tools/install-minikube/">官方-Install Minikube</a></li>
+<li><a target="_blank" rel="noopener" href="http://peihsinsu.blogspot.tw/2017/10/minikube-kubernetes.html">知識過客-使用 minikube 輕鬆上手 kubernetes</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=Q6g7w7Cmwlk">Train.IO - K8S</a></li>
+<li><a target="_blank" rel="noopener" href="https://kubernetes.io/docs/api-reference/v1.9/">kubernetes API 1.9</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
     <link itemprop="mainEntityOfPage" href="http://example.com/2017/12/19/2017-12-19_SoftEther-VPN-Site-to-Site-L2-Bridge-VPN/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1463,7 +1562,7 @@ vpnserver  啟動腳本; /etc/init.d/vpnserver
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-count">20</span>
           <span class="site-state-item-name">文章</span>
         </a>
       </div>
