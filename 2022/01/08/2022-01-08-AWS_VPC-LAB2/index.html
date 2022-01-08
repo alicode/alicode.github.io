@@ -20,38 +20,42 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="AWS_VPC-LAB1本篇主要簡單建立VPC過程：如下圖  建立VPC (Virtual Private Cloud) 建立IGW (Internet Gateway) 建立Routing Table 建立Subnet 將路由表與Subnet建立關聯 建立Security Group 建立EC2並測試 清理Lab所建立的所有元件   建立VPC(Virtual Private Cloud)建立V">
+  <meta name="description" content="AWS_VPC-LAB2本篇延續AWS_VPC-LAB1內容,增加一個Private Subnet(10.1.2.0&#x2F;24)並在此建立一個EC2,此Subnet無法連接外網,只能與Public Subnet相互連接。如下示意圖  因爲延續AWS_VPC-LAB1內容,以下步驟只列出增加部分。  建立Private Subnet  建立Routing Table 將Routing Table與Pri">
 <meta property="og:type" content="article">
-<meta property="og:title" content="AWS_VPC-LAB1">
-<meta property="og:url" content="http://example.com/2021/12/29/2021-12-29-AWS_VPC-LAB1/index.html">
+<meta property="og:title" content="AWS_VPC-LAB2">
+<meta property="og:url" content="http://example.com/2022/01/08/2022-01-08-AWS_VPC-LAB2/index.html">
 <meta property="og:site_name" content="阿里發發電腦筆記">
-<meta property="og:description" content="AWS_VPC-LAB1本篇主要簡單建立VPC過程：如下圖  建立VPC (Virtual Private Cloud) 建立IGW (Internet Gateway) 建立Routing Table 建立Subnet 將路由表與Subnet建立關聯 建立Security Group 建立EC2並測試 清理Lab所建立的所有元件   建立VPC(Virtual Private Cloud)建立V">
+<meta property="og:description" content="AWS_VPC-LAB2本篇延續AWS_VPC-LAB1內容,增加一個Private Subnet(10.1.2.0&#x2F;24)並在此建立一個EC2,此Subnet無法連接外網,只能與Public Subnet相互連接。如下示意圖  因爲延續AWS_VPC-LAB1內容,以下步驟只列出增加部分。  建立Private Subnet  建立Routing Table 將Routing Table與Pri">
 <meta property="og:locale" content="zh_TW">
-<meta property="og:image" content="https://i.imgur.com/ysYu3ey.png">
-<meta property="og:image" content="https://i.imgur.com/w2iuoqO.png">
-<meta property="og:image" content="https://i.imgur.com/BdKKYE8.png">
-<meta property="og:image" content="https://i.imgur.com/MCZkTsP.png">
-<meta property="og:image" content="https://i.imgur.com/7BMJIsG.png">
-<meta property="og:image" content="https://i.imgur.com/Z6EGBlW.png">
-<meta property="og:image" content="https://i.imgur.com/RCS6NNm.png">
-<meta property="og:image" content="https://i.imgur.com/FXZtg5Z.png">
-<meta property="og:image" content="https://i.imgur.com/6LDstYt.png">
-<meta property="og:image" content="https://i.imgur.com/b3dKqlC.png">
-<meta property="og:image" content="https://i.imgur.com/Yiwu5SL.png">
-<meta property="og:image" content="https://i.imgur.com/8p0tlOL.png">
-<meta property="og:image" content="https://i.imgur.com/vv5rsLh.png">
-<meta property="og:image" content="https://i.imgur.com/dMJHGvK.png">
-<meta property="og:image" content="https://i.imgur.com/gm5iCnt.png">
-<meta property="og:image" content="https://i.imgur.com/JzUPZls.png">
-<meta property="article:published_time" content="2021-12-28T16:00:00.000Z">
-<meta property="article:modified_time" content="2022-01-02T10:21:10.278Z">
+<meta property="og:image" content="https://i.imgur.com/LYK7Xjw.png">
+<meta property="og:image" content="https://i.imgur.com/GRN6y9l.png">
+<meta property="og:image" content="https://i.imgur.com/oTWP4AF.png">
+<meta property="og:image" content="https://i.imgur.com/G0mC9OQ.png">
+<meta property="og:image" content="https://i.imgur.com/3a7nSJQ.png">
+<meta property="og:image" content="https://i.imgur.com/sstOPBP.png">
+<meta property="og:image" content="https://i.imgur.com/IgPv7qS.png">
+<meta property="og:image" content="https://i.imgur.com/SpC9Eua.png">
+<meta property="og:image" content="https://i.imgur.com/Xe3mr1q.png">
+<meta property="og:image" content="https://i.imgur.com/KJ8bL1M.png">
+<meta property="og:image" content="https://i.imgur.com/9XIXFDy.png">
+<meta property="og:image" content="https://i.imgur.com/bFXyGPG.png">
+<meta property="og:image" content="https://i.imgur.com/IMc0WjF.png">
+<meta property="og:image" content="https://i.imgur.com/MTLLtlz.png">
+<meta property="og:image" content="https://i.imgur.com/n1PDbvd.png">
+<meta property="og:image" content="https://i.imgur.com/l6qkP03.png">
+<meta property="og:image" content="https://i.imgur.com/6XIVfuy.png">
+<meta property="og:image" content="https://i.imgur.com/nvmGV0B.png">
+<meta property="og:image" content="https://i.imgur.com/I03Ov4f.png">
+<meta property="og:image" content="https://i.imgur.com/YgRaqPz.png">
+<meta property="article:published_time" content="2022-01-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-08T07:29:18.695Z">
 <meta property="article:author" content="Alicode">
 <meta property="article:tag" content="AWS">
 <meta property="article:tag" content="Cloud">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://i.imgur.com/ysYu3ey.png">
+<meta name="twitter:image" content="https://i.imgur.com/LYK7Xjw.png">
 
-<link rel="canonical" href="http://example.com/2021/12/29/2021-12-29-AWS_VPC-LAB1/">
+<link rel="canonical" href="http://example.com/2022/01/08/2022-01-08-AWS_VPC-LAB2/">
 
 
 <script id="page-configurations">
@@ -64,7 +68,7 @@
   };
 </script>
 
-  <title>AWS_VPC-LAB1 | 阿里發發電腦筆記</title>
+  <title>AWS_VPC-LAB2 | 阿里發發電腦筆記</title>
   
 
 
@@ -204,7 +208,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/29/2021-12-29-AWS_VPC-LAB1/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/01/08/2022-01-08-AWS_VPC-LAB2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -217,7 +221,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          AWS_VPC-LAB1
+          AWS_VPC-LAB2
         </h1>
 
         <div class="post-meta">
@@ -226,16 +230,10 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">發表於</span>
+              
 
-              <time title="創建時間：2021-12-29 00:00:00" itemprop="dateCreated datePublished" datetime="2021-12-29T00:00:00+08:00">2021-12-29</time>
+              <time title="創建時間：2022-01-08 00:00:00 / 修改時間：15:29:18" itemprop="dateCreated datePublished" datetime="2022-01-08T00:00:00+08:00">2022-01-08</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2022-01-02 18:21:10" itemprop="dateModified" datetime="2022-01-02T18:21:10+08:00">2022-01-02</time>
-              </span>
 
           
 
@@ -248,65 +246,89 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="AWS-VPC-LAB1"><a href="#AWS-VPC-LAB1" class="headerlink" title="AWS_VPC-LAB1"></a>AWS_VPC-LAB1</h1><p>本篇主要簡單建立VPC過程：如下圖</p>
+        <h1 id="AWS-VPC-LAB2"><a href="#AWS-VPC-LAB2" class="headerlink" title="AWS_VPC-LAB2"></a>AWS_VPC-LAB2</h1><p>本篇延續<a target="_blank" rel="noopener" href="https://blog.utshop.tw/2021/12/31/20121-12-31-AWS_VPC-LAB1/">AWS_VPC-LAB1</a>內容,增加一個<strong>Private Subnet(10.1.2.0/24)<strong>並在此建立一個EC2,此Subnet無法連接外網,只能與</strong>Public Subnet</strong>相互連接。如下示意圖</p>
+<p><img src="https://i.imgur.com/LYK7Xjw.png"></p>
+<p>因爲延續<a target="_blank" rel="noopener" href="https://blog.utshop.tw/2021/12/31/20121-12-31-AWS_VPC-LAB1/">AWS_VPC-LAB1</a>內容,以下步驟只列出增加部分。</p>
 <ul>
-<li>建立VPC (<strong>Virtual Private Cloud</strong>)</li>
-<li>建立IGW (Internet Gateway)</li>
+<li>建立Private Subnet </li>
 <li>建立Routing Table</li>
-<li>建立Subnet</li>
-<li>將路由表與Subnet建立關聯</li>
+<li>將Routing Table與Private Subnet建立關聯</li>
 <li>建立Security Group</li>
-<li>建立EC2並測試</li>
+<li>建立EC2</li>
+<li>測試</li>
 <li>清理Lab所建立的所有元件</li>
 </ul>
-<p><img src="https://i.imgur.com/ysYu3ey.png" alt="AWS_VPC-Public"></p>
-<h2 id="建立VPC-Virtual-Private-Cloud"><a href="#建立VPC-Virtual-Private-Cloud" class="headerlink" title="建立VPC(Virtual Private Cloud)"></a>建立VPC(<strong>Virtual Private Cloud</strong>)</h2><p>建立VPC並命名為 <strong>VPC-LAB1</strong>,並劃分一個大網段 <strong>10.1.0.0/16</strong><br><img src="https://i.imgur.com/w2iuoqO.png" alt="VPC-LAB1"></p>
-<h2 id="建立-igw"><a href="#建立-igw" class="headerlink" title="建立 igw"></a>建立 igw</h2><p>建立igw 並命名為 <strong>igw-Lab</strong>,並連線到 <strong>VPC-LAB1</strong><br><img src="https://i.imgur.com/BdKKYE8.png" alt="igw-Lab0"><br><img src="https://i.imgur.com/MCZkTsP.png" alt="igw-LAb1"><br><img src="https://i.imgur.com/7BMJIsG.png" alt="igw-Lab2"></p>
-<h2 id="建立Routing-Table"><a href="#建立Routing-Table" class="headerlink" title="建立Routing Table"></a>建立Routing Table</h2><ul>
-<li><p>Routing Table:  <strong>AZ1-Pub-Rtable</strong></p>
-<p><img src="https://i.imgur.com/Z6EGBlW.png"></p>
-</li>
-<li><p>編輯路由表, 新增一筆Default Route 到 igw-Lab<br><img src="https://i.imgur.com/RCS6NNm.png"></p>
-<h2 id="建立Subnet"><a href="#建立Subnet" class="headerlink" title="建立Subnet"></a>建立Subnet</h2></li>
-<li><p>選擇剛建立VPC :  <strong>VPC-LAB1</strong><br><img src="https://i.imgur.com/FXZtg5Z.png"></p>
-</li>
-<li><p>Subnet 名稱： <strong>AZ1-PubSubnet</strong></p>
-<ul>
+<h2 id="建立Private-Subnet"><a href="#建立Private-Subnet" class="headerlink" title="建立Private Subnet"></a>建立Private Subnet</h2><ul>
+<li>選擇VPC :  <strong>VPC-LAB1</strong><br><img src="https://i.imgur.com/GRN6y9l.png"></li>
+<li>Subnet 名稱： <strong>AZ1-Private-Subnet</strong><ul>
 <li>選定AZ區域:  選擇日本大阪一個AZ(<strong>ap-northeast-3a</strong>)</li>
-<li>分配網段:  <strong>10.1.1.0/24</strong><br><img src="https://i.imgur.com/6LDstYt.png"></li>
+<li>分配網段:  <strong>10.1.2.0/24</strong><br><img src="https://i.imgur.com/oTWP4AF.png"></li>
 </ul>
 </li>
 </ul>
-<h2 id="將路由表與Subnet建立關聯"><a href="#將路由表與Subnet建立關聯" class="headerlink" title="將路由表與Subnet建立關聯"></a>將路由表與Subnet建立關聯</h2><p><img src="https://i.imgur.com/b3dKqlC.png"></p>
-<h2 id="建立Security-Group-SG"><a href="#建立Security-Group-SG" class="headerlink" title="建立Security Group(SG)"></a>建立Security Group(SG)</h2><p>建立SG 名為 <strong>AZ1_Pub_sg1</strong>,新增兩筆傳入規則</p>
+<h2 id="建立Routing-Table"><a href="#建立Routing-Table" class="headerlink" title="建立Routing Table"></a>建立Routing Table</h2><ul>
+<li><p>Routing Table:  <strong>AZ1-Private-Rtable</strong></p>
+<p><img src="https://i.imgur.com/G0mC9OQ.png"></p>
+</li>
+<li><p>不用在新增路由,已有一筆來源10.1.0.0/16 對local路由即可<br><img src="https://i.imgur.com/3a7nSJQ.png"></p>
+</li>
+</ul>
 <ul>
-<li>任何來源 0.0.0.0/0 ,tcp port 22 都允許</li>
-<li>任何來源 0.0.0.0/0 ,ICMP-IPv4  <img src="https://i.imgur.com/Yiwu5SL.png"></li>
+<li><p>將路由表與Subnet建立關聯</p>
+<p>將剛建立的AZ1-Private-Rtable 與 AZ1-Private-Subnet 建立關聯</p>
+<p><img src="https://i.imgur.com/sstOPBP.png"></p>
+</li>
+</ul>
+<h2 id="建立Security-Group-SG"><a href="#建立Security-Group-SG" class="headerlink" title="建立Security Group(SG)"></a>建立Security Group(SG)</h2><p>建立SG 名為 <strong>AZ1_Private_sg1</strong>,新增兩筆傳入規則</p>
+<ul>
+<li><p>任何來源 10.1.1.0/24 ,tcp port 22 都允許</p>
+</li>
+<li><p>任何來源 0.0.0.0/0 ,ICMP-IPv4  </p>
+<p><img src="https://i.imgur.com/IgPv7qS.png"></p>
+<p><img src="https://i.imgur.com/SpC9Eua.png"></p>
+</li>
 </ul>
 <blockquote>
 <blockquote>
 <p>AWS的 SG 是屬於<strong>StateFul</strong>,都是綁定在<strong>ENI</strong>(Elastic Network Interface: 網卡)上(相當於Linux Iptable角色);NACL 屬於 <strong>Stateless</strong>,都是綁定上 Subnet</p>
 </blockquote>
 </blockquote>
-<h2 id="建立EC2-及測試"><a href="#建立EC2-及測試" class="headerlink" title="建立EC2 及測試"></a>建立EC2 及測試</h2><p>這邊EC2簡單建立, 只是測試VPC所建立的元件是否正確。</p>
+<h2 id="建立EC2"><a href="#建立EC2" class="headerlink" title="建立EC2"></a>建立EC2</h2><p>這邊EC2簡單建立, Tag Name為 <strong>AZ1-Private-EC2_1</strong> ,只要選擇 Ｎetwork: <strong>VPC-LAB1</strong> , Subnet: <strong>AZ1-Private-Subnet</strong> ,Auto-assign-Public-IP: <strong>disable</strong> ,其他預設即可</p>
+<p>如下圖示</p>
+<p><img src="https://i.imgur.com/Xe3mr1q.png"></p>
+<p>增加Tag 名稱,方便日後辨識</p>
+<p><img src="https://i.imgur.com/KJ8bL1M.png"></p>
+<p>選擇剛建立的security group: AZ1_Private_sg1</p>
+<p><img src="https://i.imgur.com/9XIXFDy.png"></p>
+<p>選擇之前已建立ssh-key,my-test , 主要是安全地連入EC2</p>
+<p><img src="https://i.imgur.com/bFXyGPG.png"></p>
+<p>建立好 EC2, 分配Private IP</p>
+<p><img src="https://i.imgur.com/IMc0WjF.png"></p>
+<p>查看Public Sunet 的EC2 <strong>Public IP</strong></p>
+<p><img src="https://i.imgur.com/MTLLtlz.png"></p>
+<h2 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h2><ul>
+<li><p>透過public ip 使用 ssh 加上 key 的方式連進來</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh-add  my-test.pem</span><br><span class="line">ssh -A ec2-user@13.208.44.146</span><br></pre></td></tr></table></figure></li>
+<li><p>AZ1-Pub-EC2_1 上 ping  AZ1-Private-EC2_1 (Public Subnet 是否可以與 Private Subnet 相連接)</p>
+<p><img src="https://i.imgur.com/n1PDbvd.png"></p>
+</li>
+<li><p>測試 於 AZ1-Pub-EC2_1 上 ssh Login  AZ1-Private-EC2_1</p>
+<p><img src="https://i.imgur.com/l6qkP03.png"></p>
+</li>
+<li><p>於AZ1-Private-EC2_1, 測試是否能聯外<br><img src="https://i.imgur.com/6XIVfuy.png"></p>
+</li>
+</ul>
+<h2 id="清理"><a href="#清理" class="headerlink" title="清理"></a>清理</h2><p>AWS 的價值貴於方便與彈性,使用多少算多少錢,因此這個只是個LAB ,不用時記得將他清理刪除。</p>
 <ul>
-<li>透過public ip 使用 ssh 加上 key 的方式連進來</li>
-<li>在EC2 上聯外</li>
-</ul>
-<p>以下圖示只要選擇 Ｎetwork: <strong>VPC-LAB1</strong> , Subnet: <strong>AZ1-PubSubnet</strong> ,Auto-assign-Public-IP: <strong>Enable</strong> (igw 會DHCP分配一個IP),其他預設即可</p>
-<p><img src="https://i.imgur.com/8p0tlOL.png"></p>
-<p>選擇剛建立的security group: AZ1_Pub_sg1</p>
-<p><img src="https://i.imgur.com/vv5rsLh.png"></p>
-<p>建立ssh-key , 主要是安全地連入EC2</p>
-<p><img src="https://i.imgur.com/dMJHGvK.png"></p>
-<p>建立好 EC2, 查看IGW 分配的IP</p>
-<p><img src="https://i.imgur.com/gm5iCnt.png"></p>
-<h3 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h3><ul>
-<li>測試 連進 EC2<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -i vpc-Lab1.pem ec2-user@15.152.54.18</span><br></pre></td></tr></table></figure>
-連進去後, 測試是否能聯外<br><img src="https://i.imgur.com/JzUPZls.png"></li>
-</ul>
-<h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10262172l">Day 5 網路寶石：AWS VPC 架構 Routes &amp; Security (上) </a></li>
+<li><p>將EC2 terminated</p>
+<p><img src="https://i.imgur.com/nvmGV0B.png"></p>
+<p><img src="https://i.imgur.com/I03Ov4f.png"></p>
+</li>
+<li><p>將指定VPC刪除, AWS 會自動地與指定的VPC相關聯的物件都給刪掉。</p>
+<p><img src="https://i.imgur.com/YgRaqPz.png"></p>
+<h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1></li>
+<li><p><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10262172l">Day 5 網路寶石：AWS VPC 架構 Routes &amp; Security (上) </a></p>
+</li>
 </ul>
 
     </div>
@@ -346,13 +368,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/12/05/hello-world/" rel="prev" title="Hello World">
-      <i class="fa fa-chevron-left"></i> Hello World
+    <a href="/2022/01/05/2022-01-05-AWS_VPC-LAB1_By-Terraform/" rel="prev" title="AWS_VPC-LAB1_By-Terraform">
+      <i class="fa fa-chevron-left"></i> AWS_VPC-LAB1_By-Terraform
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/12/31/20121-12-31-AWS_VPC-LAB1/" rel="next" title="AWS_VPC-LAB1">
-      AWS_VPC-LAB1 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -411,7 +430,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AWS-VPC-LAB1"><span class="nav-number">1.</span> <span class="nav-text">AWS_VPC-LAB1</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BVPC-Virtual-Private-Cloud"><span class="nav-number">1.1.</span> <span class="nav-text">建立VPC(Virtual Private Cloud)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B-igw"><span class="nav-number">1.2.</span> <span class="nav-text">建立 igw</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BRouting-Table"><span class="nav-number">1.3.</span> <span class="nav-text">建立Routing Table</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BSubnet"><span class="nav-number">1.4.</span> <span class="nav-text">建立Subnet</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%87%E8%B7%AF%E7%94%B1%E8%A1%A8%E8%88%87Subnet%E5%BB%BA%E7%AB%8B%E9%97%9C%E8%81%AF"><span class="nav-number">1.5.</span> <span class="nav-text">將路由表與Subnet建立關聯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BSecurity-Group-SG"><span class="nav-number">1.6.</span> <span class="nav-text">建立Security Group(SG)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BEC2-%E5%8F%8A%E6%B8%AC%E8%A9%A6"><span class="nav-number">1.7.</span> <span class="nav-text">建立EC2 及測試</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%AC%E8%A9%A6"><span class="nav-number">1.7.1.</span> <span class="nav-text">測試</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E8%B3%87%E6%96%99"><span class="nav-number">2.</span> <span class="nav-text">參考資料</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AWS-VPC-LAB2"><span class="nav-number">1.</span> <span class="nav-text">AWS_VPC-LAB2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BPrivate-Subnet"><span class="nav-number">1.1.</span> <span class="nav-text">建立Private Subnet</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BRouting-Table"><span class="nav-number">1.2.</span> <span class="nav-text">建立Routing Table</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BSecurity-Group-SG"><span class="nav-number">1.3.</span> <span class="nav-text">建立Security Group(SG)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BEC2"><span class="nav-number">1.4.</span> <span class="nav-text">建立EC2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%AC%E8%A9%A6"><span class="nav-number">1.5.</span> <span class="nav-text">測試</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E7%90%86"><span class="nav-number">1.6.</span> <span class="nav-text">清理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E8%B3%87%E6%96%99"><span class="nav-number">2.</span> <span class="nav-text">參考資料</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
