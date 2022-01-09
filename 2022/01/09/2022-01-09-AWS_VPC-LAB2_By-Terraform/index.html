@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="AWS_VPC-LAB2 By Terraform本篇使用Terraform 工具重新部署  AWS_VPC-LAB2內容。如下示意圖  以下步驟與 AWS_VPC-LAB2一樣, 只是換成Terraform 工具操作,延續此篇的內容AWS_VPC-LAB1_By-Terraform,本篇只是增加以下步驟,若要完整使用本篇Terraform HCL code 來建構Lab2 ,建議先使用 AWS_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AWS_VPC-LAB2 By Terraform">
+<meta property="og:url" content="http://example.com/2022/01/09/2022-01-09-AWS_VPC-LAB2_By-Terraform/index.html">
+<meta property="og:site_name" content="阿里發發電腦筆記">
+<meta property="og:description" content="AWS_VPC-LAB2 By Terraform本篇使用Terraform 工具重新部署  AWS_VPC-LAB2內容。如下示意圖  以下步驟與 AWS_VPC-LAB2一樣, 只是換成Terraform 工具操作,延續此篇的內容AWS_VPC-LAB1_By-Terraform,本篇只是增加以下步驟,若要完整使用本篇Terraform HCL code 來建構Lab2 ,建議先使用 AWS_">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://i.imgur.com/LYK7Xjw.png">
+<meta property="og:image" content="https://i.imgur.com/3KwQ5QV.png">
+<meta property="og:image" content="https://i.imgur.com/n6YL8uw.png">
+<meta property="og:image" content="https://i.imgur.com/OCv8Y5O.png">
+<meta property="og:image" content="https://i.imgur.com/xMW12TW.png">
+<meta property="article:published_time" content="2022-01-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-09T13:17:54.257Z">
+<meta property="article:author" content="Alicode">
+<meta property="article:tag" content="AWS">
+<meta property="article:tag" content="Cloud">
+<meta property="article:tag" content="Terraform">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/LYK7Xjw.png">
+
+<link rel="canonical" href="http://example.com/2022/01/09/2022-01-09-AWS_VPC-LAB2_By-Terraform/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>AWS_VPC-LAB2 By Terraform | 阿里發發電腦筆記</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="阿里發發電腦筆記" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">阿里發發電腦筆記</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Alibaba Wiki - 菩薩球球</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜尋
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜尋..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/01/09/2022-01-09-AWS_VPC-LAB2_By-Terraform/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          AWS_VPC-LAB2 By Terraform
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+              
+
+              <time title="創建時間：2022-01-09 00:00:00 / 修改時間：21:17:54" itemprop="dateCreated datePublished" datetime="2022-01-09T00:00:00+08:00">2022-01-09</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="AWS-VPC-LAB2-By-Terraform"><a href="#AWS-VPC-LAB2-By-Terraform" class="headerlink" title="AWS_VPC-LAB2 By Terraform"></a>AWS_VPC-LAB2 By Terraform</h1><p>本篇使用<strong>Terraform</strong> 工具重新部署  <a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/08/2022-01-08-AWS_VPC-LAB2/">AWS_VPC-LAB2</a>內容。如下示意圖</p>
+<p><img src="https://i.imgur.com/LYK7Xjw.png"></p>
+<p>以下步驟與 <a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/08/2022-01-08-AWS_VPC-LAB2/">AWS_VPC-LAB2</a>一樣, 只是換成<strong>Terraform</strong> 工具操作,延續此篇的內容<a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/05/2022-01-05-AWS_VPC-LAB1_By-Terraform/">AWS_VPC-LAB1_By-Terraform</a>,本篇只是增加以下步驟,若要完整使用本篇Terraform HCL code 來建構Lab2 ,建議先使用 <a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/05/2022-01-05-AWS_VPC-LAB1_By-Terraform/">AWS_VPC-LAB1_By-Terraform</a>建構好Lab1。</p>
+<ul>
+<li>建立Private Subnet </li>
+<li>建立Routing Table</li>
+<li>將Routing Table與Private Subnet建立關聯</li>
+<li>建立Security Group</li>
+<li>建立EC2</li>
+<li>測試</li>
+<li>清理Lab所建立的所有元件</li>
+</ul>
+<h2 id="開始部署之前"><a href="#開始部署之前" class="headerlink" title="開始部署之前"></a>開始部署之前</h2><p>本篇不是Terraform 基礎教學,若不清楚Terraform可以看參考資料。</p>
+<ul>
+<li><p>安裝Terraform 很簡單可以看<a target="_blank" rel="noopener" href="https://learn.hashicorp.com/tutorials/terraform/install-cli">官網-Install Terraform</a></p>
+</li>
+<li><p>使用AWS API之前都需要先到IAM 設定申請一組<strong>key</strong>及<strong>SECRET_ACCESS_KEY</strong></p>
+<p>因為只是LAB,為了方便執行通常都會將申請好的key放置在shell script</p>
+<p><strong>myauth_key.sh</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="built_in">export</span> AWS_ACCESS_KEY_ID=<span class="string">&#x27;your key id&#x27;</span></span><br><span class="line"><span class="built_in">export</span> AWS_SECRET_ACCESS_KEY=<span class="string">&#x27;your secret key&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>在執行任何AWS API或Terraform之前先執行 <strong>myauth_key.sh</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> ./myhome-auth_key.sh</span><br></pre></td></tr></table></figure>
+<h2 id="先宣告變數"><a href="#先宣告變數" class="headerlink" title="先宣告變數"></a>先宣告變數</h2><p>以下開始是Terraform hcl 語法。此節將VPC , subnet 等需要網段及登入 EC2 需要Key的名稱等參數, 用變數方式載入便於其他資源物件利用。</p>
+</li>
+</ul>
+<p><strong>vars.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">variable &quot;AWS_REGION&quot; &#123;</span><br><span class="line">  default &#x3D; &quot;ap-northeast-3&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">variable &quot;AWS_AZ&quot; &#123;</span><br><span class="line">  default &#x3D; &quot;ap-northeast-3a&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">variable &quot;vpc_cidr_lab0&quot; &#123;</span><br><span class="line">    default &#x3D; &quot;10.1.0.0&#x2F;16&quot;</span><br><span class="line">    description &#x3D; &quot;the vpc cidr&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">variable &quot;public_subnet_cidr_lab0&quot; &#123;</span><br><span class="line">    default &#x3D; &quot;10.1.1.0&#x2F;24&quot;</span><br><span class="line">    description &#x3D; &quot;The cidr of the public subnet&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">variable &quot;private_subnet_cidr_lab0&quot; &#123;</span><br><span class="line">    default &#x3D; &quot;10.1.2.0&#x2F;24&quot;</span><br><span class="line">    description &#x3D; &quot;The cidr of the private subnet&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">variable &quot;key_name&quot; &#123;</span><br><span class="line">    default &#x3D; &quot;my-test&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>佈建雲端 IaaS 使用Terraform 好處是它提供多樣Provider : 像是 <strong>AWS</strong>,<strong>GCP</strong>,<strong>Azure</strong>,<strong>aliyun</strong>,<strong>DigitalOcean</strong>等等<br>以下是宣告是使用AWS Provider<br><strong>provider.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">provider &quot;aws&quot; &#123;</span><br><span class="line">  profile &#x3D; &quot;default&quot;</span><br><span class="line">  region  &#x3D; var.AWS_REGION</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="建立Private-Subnet"><a href="#建立Private-Subnet" class="headerlink" title="建立Private Subnet"></a>建立Private Subnet</h2><ul>
+<li>選擇VPC :  <strong>VPC-LAB1</strong></li>
+<li>Subnet 名稱： <strong>AZ1-Private-Subnet</strong><ul>
+<li>選定AZ區域:  選擇日本大阪一個AZ(<strong>ap-northeast-3a</strong>)</li>
+<li>分配網段:  <strong>10.1.2.0/24</strong></li>
+</ul>
+</li>
+</ul>
+<p><strong>subnet.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># Create Private Subnet</span><br><span class="line">resource &quot;aws_subnet&quot; &quot;az1-private-subnet&quot; &#123;</span><br><span class="line">   vpc_id &#x3D; aws_vpc.main.id</span><br><span class="line">   cidr_block &#x3D; var.private_subnet_cidr_lab0</span><br><span class="line">   availability_zone &#x3D; var.AWS_AZ</span><br><span class="line">   map_public_ip_on_launch &#x3D; &quot;false&quot;</span><br><span class="line">   tags &#x3D; &#123;</span><br><span class="line">      Name &#x3D; &quot;AZ1-Private-Subnet&quot;</span><br><span class="line"></span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="建立Routing-Table"><a href="#建立Routing-Table" class="headerlink" title="建立Routing Table"></a>建立Routing Table</h2><p><strong>route.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># Create Private  Route Table</span><br><span class="line">resource &quot;aws_route_table&quot; &quot;main-private-rt&quot; &#123;</span><br><span class="line">  vpc_id &#x3D; aws_vpc.main.id</span><br><span class="line">  tags &#x3D; &#123;</span><br><span class="line">      Name &#x3D; &quot;AZ1-Private-Rtable&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># route associations private (將路由表與Subnet建立關聯)</span><br><span class="line">resource &quot;aws_route_table_association&quot; &quot;main-private-rt-az1&quot; &#123;</span><br><span class="line">   subnet_id &#x3D; aws_subnet.az1-private-subnet.id</span><br><span class="line">   route_table_id &#x3D; aws_route_table.main-private-rt.id</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="建立Security-Group-SG"><a href="#建立Security-Group-SG" class="headerlink" title="建立Security Group(SG)"></a>建立Security Group(SG)</h2><p>建立SG 名為 <strong>AZ1_Private_sg1</strong>,新增兩筆傳入規則</p>
+<ul>
+<li><p>任何來源 10.1.1.0/24 ,tcp port 22 都允許</p>
+</li>
+<li><p>任何來源 0.0.0.0/0 ,ICMP-IPv4</p>
+</li>
+</ul>
+<p><strong>sg.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">resource &quot;aws_security_group&quot; &quot;sg2&quot; &#123;</span><br><span class="line">  name &#x3D; &quot;main_sg2&quot;</span><br><span class="line">  vpc_id &#x3D; aws_vpc.main.id</span><br><span class="line"></span><br><span class="line">  ingress &#123;</span><br><span class="line">       from_port   &#x3D; &quot;22&quot;</span><br><span class="line">       to_port     &#x3D; &quot;22&quot;</span><br><span class="line">       protocol    &#x3D; &quot;TCP&quot;</span><br><span class="line">       cidr_blocks &#x3D; [&quot;10.1.1.0&#x2F;24&quot;]</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  ingress &#123;</span><br><span class="line">       from_port   &#x3D; &quot;-1&quot;</span><br><span class="line">       to_port     &#x3D; &quot;-1&quot;</span><br><span class="line">       protocol    &#x3D; &quot;ICMP&quot;</span><br><span class="line">       cidr_blocks &#x3D; [&quot;0.0.0.0&#x2F;0&quot;]</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  egress &#123;</span><br><span class="line">       from_port &#x3D; 0</span><br><span class="line">       to_port &#x3D; 0</span><br><span class="line">       protocol &#x3D; &quot;-1&quot;</span><br><span class="line">       cidr_blocks &#x3D; [&quot;0.0.0.0&#x2F;0&quot;]</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  tags &#x3D; &#123;</span><br><span class="line">       Name &#x3D; &quot;AZ1_Private_sg1&quot;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<blockquote>
+<blockquote>
+<p>AWS的 SG 是屬於<strong>StateFul</strong>,都是綁定在<strong>ENI</strong>(Elastic Network Interface: 網卡)上(相當於Linux Iptable角色);NACL 屬於 <strong>Stateless</strong>,都是綁定上 Subnet</p>
+</blockquote>
+</blockquote>
+<h2 id="建立EC2"><a href="#建立EC2" class="headerlink" title="建立EC2"></a>建立EC2</h2><p>這邊EC2簡單建立, Tag Name為 <strong>AZ1-Private-EC2_1</strong> , Subnet: <strong>AZ1-Private-Subnet</strong> ,security group: <strong>AZ1_Private_sg1</strong>,ssh-key: <strong>my-test</strong>,AMI: <strong>透過data source 獲取AMI ID</strong> (可以看上篇 <a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/05/2022-01-05-AWS_VPC-LAB1_By-Terraform/">AWS_VPC-LAB1_By-Terraform</a> 獲取AMI的部分),其他預設即可</p>
+<p>**ec2.tf **</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># For Private Subnet</span><br><span class="line">resource &quot;aws_instance&quot; &quot;example2&quot; &#123;</span><br><span class="line">  ami           &#x3D; data.aws_ami.example.id</span><br><span class="line">  instance_type &#x3D; &quot;t2.micro&quot;</span><br><span class="line">  # the VPC subnet</span><br><span class="line">  subnet_id &#x3D; aws_subnet.az1-private-subnet.id</span><br><span class="line">  # the security group</span><br><span class="line">  vpc_security_group_ids &#x3D; [aws_security_group.sg2.id]</span><br><span class="line">  # the public SSH key</span><br><span class="line">  key_name &#x3D; var.key_name</span><br><span class="line">  tags &#x3D; &#123;</span><br><span class="line">       Name &#x3D; &quot;AZ1-Private-EC2_1&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="執行-Terraform"><a href="#執行-Terraform" class="headerlink" title="執行 Terraform"></a>執行 Terraform</h2><p>完整目錄架構如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── ec2.tf</span><br><span class="line">├── myDatasource.tf</span><br><span class="line">├── provider.tf</span><br><span class="line">├── route.tf</span><br><span class="line">├── sg.tf</span><br><span class="line">├── subnet.tf</span><br><span class="line">├── vars.tf</span><br><span class="line">└── vpc.tf</span><br></pre></td></tr></table></figure>
+<p>第一次執行Terraform,需要初始化先下載對應的Provider (本篇是 AWS),完成後,於所在目錄底下有一個隱藏檔 <strong>.terraform</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform init</span><br></pre></td></tr></table></figure>
+<p>可以查看剛寫的 terraform 語法是否正確</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform validate</span><br></pre></td></tr></table></figure>
+<p>執行測試計畫,可以看所列的參數</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform plan</span><br></pre></td></tr></table></figure>
+<p>開始部署</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform apply  -auto-approve</span><br></pre></td></tr></table></figure>
+
+<p>建立好 EC2, 查看分配Private IP,及EC2 <strong>Public IP</strong></p>
+<p><img src="https://i.imgur.com/3KwQ5QV.png"></p>
+<h2 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h2><ul>
+<li><p>透過public ip 使用 ssh 加上 key 的方式連進來</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh-add  my-test.pem</span><br><span class="line">ssh -A ec2-user@13.208.134.93</span><br></pre></td></tr></table></figure></li>
+<li><p>AZ1-Pub-EC2_1 上 ping  AZ1-Private-EC2_1 (Public Subnet 是否可以與 Private Subnet 相連接)</p>
+<p><img src="https://i.imgur.com/n6YL8uw.png"></p>
+</li>
+<li><p>測試 於 AZ1-Pub-EC2_1 上 ssh Login  AZ1-Private-EC2_1</p>
+<p><img src="https://i.imgur.com/OCv8Y5O.png"></p>
+</li>
+<li><p>於AZ1-Private-EC2_1, 測試是否能聯外<br><img src="https://i.imgur.com/xMW12TW.png"></p>
+</li>
+</ul>
+<h2 id="清理"><a href="#清理" class="headerlink" title="清理"></a>清理</h2><p>AWS 的價值貴於方便與彈性,使用多少算多少錢,因此這個只是個LAB ,不用時記得將他清理刪除。<br>使用Terraform  只要下以下指令即可清理完成。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform destroy</span><br></pre></td></tr></table></figure>
+<h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://registry.terraform.io/providers/hashicorp/aws/latest/docs">Terraform_AWS</a></li>
+<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10262172l">Day 5 網路寶石：AWS VPC 架構 Routes &amp; Security (上) </a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/05/2022-01-05-AWS_VPC-LAB1_By-Terraform/">AWS_VPC-LAB1_By-Terraform</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>歡迎關注我的其它發布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/AWS/" rel="tag"># AWS</a>
+              <a href="/tags/Cloud/" rel="tag"># Cloud</a>
+              <a href="/tags/Terraform/" rel="tag"># Terraform</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/01/08/2022-01-08-AWS_VPC-LAB2/" rel="prev" title="AWS_VPC-LAB2">
+      <i class="fa fa-chevron-left"></i> AWS_VPC-LAB2
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AWS-VPC-LAB2-By-Terraform"><span class="nav-number">1.</span> <span class="nav-text">AWS_VPC-LAB2 By Terraform</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%96%8B%E5%A7%8B%E9%83%A8%E7%BD%B2%E4%B9%8B%E5%89%8D"><span class="nav-number">1.1.</span> <span class="nav-text">開始部署之前</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E5%AE%A3%E5%91%8A%E8%AE%8A%E6%95%B8"><span class="nav-number">1.2.</span> <span class="nav-text">先宣告變數</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BPrivate-Subnet"><span class="nav-number">1.3.</span> <span class="nav-text">建立Private Subnet</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BRouting-Table"><span class="nav-number">1.4.</span> <span class="nav-text">建立Routing Table</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BSecurity-Group-SG"><span class="nav-number">1.5.</span> <span class="nav-text">建立Security Group(SG)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BEC2"><span class="nav-number">1.6.</span> <span class="nav-text">建立EC2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%B7%E8%A1%8C-Terraform"><span class="nav-number">1.7.</span> <span class="nav-text">執行 Terraform</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%AC%E8%A9%A6"><span class="nav-number">1.8.</span> <span class="nav-text">測試</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E7%90%86"><span class="nav-number">1.9.</span> <span class="nav-text">清理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E8%B3%87%E6%96%99"><span class="nav-number">2.</span> <span class="nav-text">參考資料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Alicode</p>
+  <div class="site-description" itemprop="description">因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alicode</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>

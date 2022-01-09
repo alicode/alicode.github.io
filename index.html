@@ -183,6 +183,162 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/01/09/2022-01-09-AWS_VPC-LAB2_By-Terraform/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/01/09/2022-01-09-AWS_VPC-LAB2_By-Terraform/" class="post-title-link" itemprop="url">AWS_VPC-LAB2 By Terraform</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+              
+
+              <time title="創建時間：2022-01-09 00:00:00 / 修改時間：21:17:54" itemprop="dateCreated datePublished" datetime="2022-01-09T00:00:00+08:00">2022-01-09</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="AWS-VPC-LAB2-By-Terraform"><a href="#AWS-VPC-LAB2-By-Terraform" class="headerlink" title="AWS_VPC-LAB2 By Terraform"></a>AWS_VPC-LAB2 By Terraform</h1><p>本篇使用<strong>Terraform</strong> 工具重新部署  <a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/08/2022-01-08-AWS_VPC-LAB2/">AWS_VPC-LAB2</a>內容。如下示意圖</p>
+<p><img src="https://i.imgur.com/LYK7Xjw.png"></p>
+<p>以下步驟與 <a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/08/2022-01-08-AWS_VPC-LAB2/">AWS_VPC-LAB2</a>一樣, 只是換成<strong>Terraform</strong> 工具操作,延續此篇的內容<a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/05/2022-01-05-AWS_VPC-LAB1_By-Terraform/">AWS_VPC-LAB1_By-Terraform</a>,本篇只是增加以下步驟,若要完整使用本篇Terraform HCL code 來建構Lab2 ,建議先使用 <a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/05/2022-01-05-AWS_VPC-LAB1_By-Terraform/">AWS_VPC-LAB1_By-Terraform</a>建構好Lab1。</p>
+<ul>
+<li>建立Private Subnet </li>
+<li>建立Routing Table</li>
+<li>將Routing Table與Private Subnet建立關聯</li>
+<li>建立Security Group</li>
+<li>建立EC2</li>
+<li>測試</li>
+<li>清理Lab所建立的所有元件</li>
+</ul>
+<h2 id="開始部署之前"><a href="#開始部署之前" class="headerlink" title="開始部署之前"></a>開始部署之前</h2><p>本篇不是Terraform 基礎教學,若不清楚Terraform可以看參考資料。</p>
+<ul>
+<li><p>安裝Terraform 很簡單可以看<a target="_blank" rel="noopener" href="https://learn.hashicorp.com/tutorials/terraform/install-cli">官網-Install Terraform</a></p>
+</li>
+<li><p>使用AWS API之前都需要先到IAM 設定申請一組<strong>key</strong>及<strong>SECRET_ACCESS_KEY</strong></p>
+<p>因為只是LAB,為了方便執行通常都會將申請好的key放置在shell script</p>
+<p><strong>myauth_key.sh</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="built_in">export</span> AWS_ACCESS_KEY_ID=<span class="string">&#x27;your key id&#x27;</span></span><br><span class="line"><span class="built_in">export</span> AWS_SECRET_ACCESS_KEY=<span class="string">&#x27;your secret key&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>在執行任何AWS API或Terraform之前先執行 <strong>myauth_key.sh</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> ./myhome-auth_key.sh</span><br></pre></td></tr></table></figure>
+<h2 id="先宣告變數"><a href="#先宣告變數" class="headerlink" title="先宣告變數"></a>先宣告變數</h2><p>以下開始是Terraform hcl 語法。此節將VPC , subnet 等需要網段及登入 EC2 需要Key的名稱等參數, 用變數方式載入便於其他資源物件利用。</p>
+</li>
+</ul>
+<p><strong>vars.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">variable &quot;AWS_REGION&quot; &#123;</span><br><span class="line">  default &#x3D; &quot;ap-northeast-3&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">variable &quot;AWS_AZ&quot; &#123;</span><br><span class="line">  default &#x3D; &quot;ap-northeast-3a&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">variable &quot;vpc_cidr_lab0&quot; &#123;</span><br><span class="line">    default &#x3D; &quot;10.1.0.0&#x2F;16&quot;</span><br><span class="line">    description &#x3D; &quot;the vpc cidr&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">variable &quot;public_subnet_cidr_lab0&quot; &#123;</span><br><span class="line">    default &#x3D; &quot;10.1.1.0&#x2F;24&quot;</span><br><span class="line">    description &#x3D; &quot;The cidr of the public subnet&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">variable &quot;private_subnet_cidr_lab0&quot; &#123;</span><br><span class="line">    default &#x3D; &quot;10.1.2.0&#x2F;24&quot;</span><br><span class="line">    description &#x3D; &quot;The cidr of the private subnet&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">variable &quot;key_name&quot; &#123;</span><br><span class="line">    default &#x3D; &quot;my-test&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>佈建雲端 IaaS 使用Terraform 好處是它提供多樣Provider : 像是 <strong>AWS</strong>,<strong>GCP</strong>,<strong>Azure</strong>,<strong>aliyun</strong>,<strong>DigitalOcean</strong>等等<br>以下是宣告是使用AWS Provider<br><strong>provider.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">provider &quot;aws&quot; &#123;</span><br><span class="line">  profile &#x3D; &quot;default&quot;</span><br><span class="line">  region  &#x3D; var.AWS_REGION</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="建立Private-Subnet"><a href="#建立Private-Subnet" class="headerlink" title="建立Private Subnet"></a>建立Private Subnet</h2><ul>
+<li>選擇VPC :  <strong>VPC-LAB1</strong></li>
+<li>Subnet 名稱： <strong>AZ1-Private-Subnet</strong><ul>
+<li>選定AZ區域:  選擇日本大阪一個AZ(<strong>ap-northeast-3a</strong>)</li>
+<li>分配網段:  <strong>10.1.2.0/24</strong></li>
+</ul>
+</li>
+</ul>
+<p><strong>subnet.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># Create Private Subnet</span><br><span class="line">resource &quot;aws_subnet&quot; &quot;az1-private-subnet&quot; &#123;</span><br><span class="line">   vpc_id &#x3D; aws_vpc.main.id</span><br><span class="line">   cidr_block &#x3D; var.private_subnet_cidr_lab0</span><br><span class="line">   availability_zone &#x3D; var.AWS_AZ</span><br><span class="line">   map_public_ip_on_launch &#x3D; &quot;false&quot;</span><br><span class="line">   tags &#x3D; &#123;</span><br><span class="line">      Name &#x3D; &quot;AZ1-Private-Subnet&quot;</span><br><span class="line"></span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="建立Routing-Table"><a href="#建立Routing-Table" class="headerlink" title="建立Routing Table"></a>建立Routing Table</h2><p><strong>route.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># Create Private  Route Table</span><br><span class="line">resource &quot;aws_route_table&quot; &quot;main-private-rt&quot; &#123;</span><br><span class="line">  vpc_id &#x3D; aws_vpc.main.id</span><br><span class="line">  tags &#x3D; &#123;</span><br><span class="line">      Name &#x3D; &quot;AZ1-Private-Rtable&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># route associations private (將路由表與Subnet建立關聯)</span><br><span class="line">resource &quot;aws_route_table_association&quot; &quot;main-private-rt-az1&quot; &#123;</span><br><span class="line">   subnet_id &#x3D; aws_subnet.az1-private-subnet.id</span><br><span class="line">   route_table_id &#x3D; aws_route_table.main-private-rt.id</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="建立Security-Group-SG"><a href="#建立Security-Group-SG" class="headerlink" title="建立Security Group(SG)"></a>建立Security Group(SG)</h2><p>建立SG 名為 <strong>AZ1_Private_sg1</strong>,新增兩筆傳入規則</p>
+<ul>
+<li><p>任何來源 10.1.1.0/24 ,tcp port 22 都允許</p>
+</li>
+<li><p>任何來源 0.0.0.0/0 ,ICMP-IPv4</p>
+</li>
+</ul>
+<p><strong>sg.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">resource &quot;aws_security_group&quot; &quot;sg2&quot; &#123;</span><br><span class="line">  name &#x3D; &quot;main_sg2&quot;</span><br><span class="line">  vpc_id &#x3D; aws_vpc.main.id</span><br><span class="line"></span><br><span class="line">  ingress &#123;</span><br><span class="line">       from_port   &#x3D; &quot;22&quot;</span><br><span class="line">       to_port     &#x3D; &quot;22&quot;</span><br><span class="line">       protocol    &#x3D; &quot;TCP&quot;</span><br><span class="line">       cidr_blocks &#x3D; [&quot;10.1.1.0&#x2F;24&quot;]</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  ingress &#123;</span><br><span class="line">       from_port   &#x3D; &quot;-1&quot;</span><br><span class="line">       to_port     &#x3D; &quot;-1&quot;</span><br><span class="line">       protocol    &#x3D; &quot;ICMP&quot;</span><br><span class="line">       cidr_blocks &#x3D; [&quot;0.0.0.0&#x2F;0&quot;]</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  egress &#123;</span><br><span class="line">       from_port &#x3D; 0</span><br><span class="line">       to_port &#x3D; 0</span><br><span class="line">       protocol &#x3D; &quot;-1&quot;</span><br><span class="line">       cidr_blocks &#x3D; [&quot;0.0.0.0&#x2F;0&quot;]</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  tags &#x3D; &#123;</span><br><span class="line">       Name &#x3D; &quot;AZ1_Private_sg1&quot;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<blockquote>
+<blockquote>
+<p>AWS的 SG 是屬於<strong>StateFul</strong>,都是綁定在<strong>ENI</strong>(Elastic Network Interface: 網卡)上(相當於Linux Iptable角色);NACL 屬於 <strong>Stateless</strong>,都是綁定上 Subnet</p>
+</blockquote>
+</blockquote>
+<h2 id="建立EC2"><a href="#建立EC2" class="headerlink" title="建立EC2"></a>建立EC2</h2><p>這邊EC2簡單建立, Tag Name為 <strong>AZ1-Private-EC2_1</strong> , Subnet: <strong>AZ1-Private-Subnet</strong> ,security group: <strong>AZ1_Private_sg1</strong>,ssh-key: <strong>my-test</strong>,AMI: <strong>透過data source 獲取AMI ID</strong> (可以看上篇 <a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/05/2022-01-05-AWS_VPC-LAB1_By-Terraform/">AWS_VPC-LAB1_By-Terraform</a> 獲取AMI的部分),其他預設即可</p>
+<p>**ec2.tf **</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># For Private Subnet</span><br><span class="line">resource &quot;aws_instance&quot; &quot;example2&quot; &#123;</span><br><span class="line">  ami           &#x3D; data.aws_ami.example.id</span><br><span class="line">  instance_type &#x3D; &quot;t2.micro&quot;</span><br><span class="line">  # the VPC subnet</span><br><span class="line">  subnet_id &#x3D; aws_subnet.az1-private-subnet.id</span><br><span class="line">  # the security group</span><br><span class="line">  vpc_security_group_ids &#x3D; [aws_security_group.sg2.id]</span><br><span class="line">  # the public SSH key</span><br><span class="line">  key_name &#x3D; var.key_name</span><br><span class="line">  tags &#x3D; &#123;</span><br><span class="line">       Name &#x3D; &quot;AZ1-Private-EC2_1&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="執行-Terraform"><a href="#執行-Terraform" class="headerlink" title="執行 Terraform"></a>執行 Terraform</h2><p>完整目錄架構如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── ec2.tf</span><br><span class="line">├── myDatasource.tf</span><br><span class="line">├── provider.tf</span><br><span class="line">├── route.tf</span><br><span class="line">├── sg.tf</span><br><span class="line">├── subnet.tf</span><br><span class="line">├── vars.tf</span><br><span class="line">└── vpc.tf</span><br></pre></td></tr></table></figure>
+<p>第一次執行Terraform,需要初始化先下載對應的Provider (本篇是 AWS),完成後,於所在目錄底下有一個隱藏檔 <strong>.terraform</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform init</span><br></pre></td></tr></table></figure>
+<p>可以查看剛寫的 terraform 語法是否正確</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform validate</span><br></pre></td></tr></table></figure>
+<p>執行測試計畫,可以看所列的參數</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform plan</span><br></pre></td></tr></table></figure>
+<p>開始部署</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform apply  -auto-approve</span><br></pre></td></tr></table></figure>
+
+<p>建立好 EC2, 查看分配Private IP,及EC2 <strong>Public IP</strong></p>
+<p><img src="https://i.imgur.com/3KwQ5QV.png"></p>
+<h2 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h2><ul>
+<li><p>透過public ip 使用 ssh 加上 key 的方式連進來</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh-add  my-test.pem</span><br><span class="line">ssh -A ec2-user@13.208.134.93</span><br></pre></td></tr></table></figure></li>
+<li><p>AZ1-Pub-EC2_1 上 ping  AZ1-Private-EC2_1 (Public Subnet 是否可以與 Private Subnet 相連接)</p>
+<p><img src="https://i.imgur.com/n6YL8uw.png"></p>
+</li>
+<li><p>測試 於 AZ1-Pub-EC2_1 上 ssh Login  AZ1-Private-EC2_1</p>
+<p><img src="https://i.imgur.com/OCv8Y5O.png"></p>
+</li>
+<li><p>於AZ1-Private-EC2_1, 測試是否能聯外<br><img src="https://i.imgur.com/xMW12TW.png"></p>
+</li>
+</ul>
+<h2 id="清理"><a href="#清理" class="headerlink" title="清理"></a>清理</h2><p>AWS 的價值貴於方便與彈性,使用多少算多少錢,因此這個只是個LAB ,不用時記得將他清理刪除。<br>使用Terraform  只要下以下指令即可清理完成。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform destroy</span><br></pre></td></tr></table></figure>
+<h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://registry.terraform.io/providers/hashicorp/aws/latest/docs">Terraform_AWS</a></li>
+<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10262172l">Day 5 網路寶石：AWS VPC 架構 Routes &amp; Security (上) </a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/05/2022-01-05-AWS_VPC-LAB1_By-Terraform/">AWS_VPC-LAB1_By-Terraform</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/01/08/2022-01-08-AWS_VPC-LAB2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -356,7 +512,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2022-01-06 23:36:52" itemprop="dateModified" datetime="2022-01-06T23:36:52+08:00">2022-01-06</time>
+                <time title="修改時間：2022-01-09 21:12:04" itemprop="dateModified" datetime="2022-01-09T21:12:04+08:00">2022-01-09</time>
               </span>
 
           
@@ -1218,94 +1374,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2018/04/01/Python-Simple-parallel/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Alicode">
-      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="阿里發發電腦筆記">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2018/04/01/Python-Simple-parallel/" class="post-title-link" itemprop="url">Python-Simple-parallel</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">發表於</span>
-
-              <time title="創建時間：2018-04-01 00:00:00" itemprop="dateCreated datePublished" datetime="2018-04-01T00:00:00+08:00">2018-04-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2021-12-05 20:17:33" itemprop="dateModified" datetime="2021-12-05T20:17:33+08:00">2021-12-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Python-multiprocessing"><a href="#Python-multiprocessing" class="headerlink" title="Python - multiprocessing"></a>Python - multiprocessing</h2><p>大部分程式都是由上到下依序執行,若一個程式花費需要5秒,批示執行8次,理論是應該須40秒時間。現在CPU都是多核心,假設有一個8 core的CPU,將執行8次花費5秒的程式,分配到每個核心並行執行,理論上應該只要5秒就可完成工作。Python 標準函式庫 就有 multiprocessing 可達到此目的。</p>
-<h2 id="Python-Demo-1"><a href="#Python-Demo-1" class="headerlink" title="Python Demo 1"></a>Python Demo 1</h2><p>1.ping 5次 (循序方式,於雙核CPU) ;測出約8秒</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def job1(url):</span><br><span class="line">    tmpstr&#x3D;&quot;ping -c 5  &quot;+str(url)</span><br><span class="line">    os.system(tmpstr)</span><br><span class="line"></span><br><span class="line">if __name__&#x3D;&#x3D;&#39;__main__&#39;:</span><br><span class="line">    job1(&quot;8.8.8.8&quot;)</span><br><span class="line">    job1(&quot;8.8.4.4&quot;)</span><br></pre></td></tr></table></figure>
-
-
-<p>2.ping 5次 (<strong>並行方式</strong>,於雙核CPU);測出約4秒</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">import multiprocessing as mp</span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">def job1(url):</span><br><span class="line">    tmpstr&#x3D;&quot;ping -c 5  &quot;+str(url)</span><br><span class="line">    os.system(tmpstr)</span><br><span class="line"></span><br><span class="line">if __name__&#x3D;&#x3D;&#39;__main__&#39;:</span><br><span class="line">    p1&#x3D;mp.Process(target&#x3D;job1,args&#x3D;(&quot;8.8.8.8&quot;,))</span><br><span class="line">    p1.start()</span><br><span class="line">    p2&#x3D;mp.Process(target&#x3D;job1,args&#x3D;(&quot;8.8.4.4&quot;,))</span><br><span class="line">    p2.start()</span><br></pre></td></tr></table></figure>
-
-<h2 id="Python-Demo-2-另一種Pool寫法"><a href="#Python-Demo-2-另一種Pool寫法" class="headerlink" title="Python Demo 2 ,另一種Pool寫法"></a>Python Demo 2 ,另一種Pool寫法</h2><p>1.一個工作睡3秒,執行5次。(循序方式,於雙核CPU) ;測出約15秒</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python                                                                                                                 </span><br><span class="line">from multiprocessing import Pool</span><br><span class="line">from time import sleep</span><br><span class="line"></span><br><span class="line">def task(argss):</span><br><span class="line">    print(str(argss) +&quot; start ... sleep&quot;)</span><br><span class="line">    sleep(3)</span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    for i in range(5):</span><br><span class="line">        task(i)</span><br></pre></td></tr></table></figure>
-
-<p>2.一個工作睡3秒,執行5次。(<strong>並行方式</strong>,於雙核CPU) ;測出約9秒</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python</span><br><span class="line">from multiprocessing import Pool</span><br><span class="line">from time import sleep</span><br><span class="line">                                                                                                                                    </span><br><span class="line">def task(argss):</span><br><span class="line">    print(str(argss) +&quot; start ... sleep&quot;)</span><br><span class="line">    sleep(3)</span><br><span class="line">    </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    p&#x3D;Pool(2)</span><br><span class="line">    for i in range(5):</span><br><span class="line">        p.apply_async(task, args&#x3D;(i,))</span><br><span class="line">        </span><br><span class="line">    print(&#39;Waiting for all subprocesses..&#39;)</span><br><span class="line">    p.close()</span><br><span class="line">    p.join()</span><br><span class="line">    print(&#39;All Subprocess done ..&#39;)</span><br></pre></td></tr></table></figure>
-
-<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.python.org.tw/3/library/multiprocessing.html#module-multiprocessing">Python標準庫_multiprocessing</a></li>
-<li><a href="filesystem:chrome-extension://oegnpmiddfljlloiklpkeelagaeejfai/temporary/9c5cbb04-be0a-4f65-b4c5-61b9bd7cd4c6/1487326368864_729/index.htm">Multiprocessing with Python</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431927781401bb47ccf187b24c3b955157bb12c5882d000">廖雪峰-多進程</a></li>
-<li><a target="_blank" rel="noopener" href="http://www.cnblogs.com/vamei/archive/2012/10/12/2721484.html#">Python標準庫10 多進程初步 (multiprocessing包)</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一頁"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一頁"></i></a>
   </nav>
 
 
@@ -1371,14 +1443,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">文章</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">18</span>
         <span class="site-state-item-name">標籤</span></a>
       </div>
   </nav>
