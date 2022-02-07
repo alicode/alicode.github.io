@@ -1078,7 +1078,9 @@ vpnserver  啟動腳本; /etc/init.d/vpnserver
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="built_in">export</span> AWS_ACCESS_KEY_ID=<span class="string">&#x27;your key id&#x27;</span></span><br><span class="line"><span class="built_in">export</span> AWS_SECRET_ACCESS_KEY=<span class="string">&#x27;your secret key&#x27;</span></span><br></pre></td></tr></table></figure>
 
 <p>在執行任何AWS API或Terraform之前先執行 <strong>myauth_key.sh</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ./myhome-auth_key.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ./myhome-auth_key.sh</span><br></pre></td></tr></table></figure></li>
+<li><p>完整Terraform Hcl code 在此<a href="https://github.com/88gocode/AWS-LAB-Terraform">88gocode/AWS-LAB-Terraform</a></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/88gocode/AWS-LAB-Terraform.git</span><br><span class="line"><span class="built_in">cd</span> AWS-LAB-Terraform</span><br><span class="line">git checkout lab1</span><br></pre></td></tr></table></figure>
 <h2 id="先宣告變數"><a href="#先宣告變數" class="headerlink" title="先宣告變數"></a>先宣告變數</h2><p>以下開始是Terraform hcl 語法。此節將VPC , subnet 等需要網段及登入 EC2 需要Key的名稱等參數, 用變數方式載入便於其他資源物件利用。</p>
 </li>
 </ul>
@@ -1367,7 +1369,9 @@ vpnserver  啟動腳本; /etc/init.d/vpnserver
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="built_in">export</span> AWS_ACCESS_KEY_ID=<span class="string">&#x27;your key id&#x27;</span></span><br><span class="line"><span class="built_in">export</span> AWS_SECRET_ACCESS_KEY=<span class="string">&#x27;your secret key&#x27;</span></span><br></pre></td></tr></table></figure>
 
 <p>在執行任何AWS API或Terraform之前先執行 <strong>myauth_key.sh</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ./myhome-auth_key.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ./myhome-auth_key.sh</span><br></pre></td></tr></table></figure></li>
+<li><p>完整Terraform Hcl code 在此<a href="https://github.com/88gocode/AWS-LAB-Terraform">88gocode/AWS-LAB-Terraform</a></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/88gocode/AWS-LAB-Terraform.git</span><br><span class="line"><span class="built_in">cd</span> AWS-LAB-Terraform</span><br><span class="line">git checkout lab2</span><br></pre></td></tr></table></figure>
 <h2 id="先宣告變數"><a href="#先宣告變數" class="headerlink" title="先宣告變數"></a>先宣告變數</h2><p>以下開始是Terraform hcl 語法。此節將VPC , subnet 等需要網段及登入 EC2 需要Key的名稱等參數, 用變數方式載入便於其他資源物件利用。</p>
 </li>
 </ul>
