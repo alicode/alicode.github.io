@@ -183,6 +183,143 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/11/2022-02-12-AWS_VPC-LAB3_By-Terraform/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/11/2022-02-12-AWS_VPC-LAB3_By-Terraform/" class="post-title-link" itemprop="url">AWS_VPC-LAB3 By Terraform</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2022-02-11 00:00:00" itemprop="dateCreated datePublished" datetime="2022-02-11T00:00:00+08:00">2022-02-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2022-02-12 21:18:45" itemprop="dateModified" datetime="2022-02-12T21:18:45+08:00">2022-02-12</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="AWS-VPC-LAB3-By-Terraform"><a href="#AWS-VPC-LAB3-By-Terraform" class="headerlink" title="AWS_VPC-LAB3 By Terraform"></a>AWS_VPC-LAB3 By Terraform</h1><p>本篇與 <a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/09/2022-01-09-AWS_VPC-LAB2_By-Terraform/">AWS_VPC-LAB2_By-Terraform</a>內容大致相同,主要差異在這邊的<strong>Private Subnet 1</strong>可以透過 <strong>NAT</strong> 連上Internet 如下示意圖</p>
+<p><img src="https://i.imgur.com/n0fzBoa.png"></p>
+<p>以下步驟延續此篇的內容<a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/09/2022-01-09-AWS_VPC-LAB2_By-Terraform/">AWS_VPC-LAB2_By-Terraform</a>,只是增加 <strong>NAT</strong> 元件及修正 <strong>Private Subnet</strong>路由繞送的部分。</p>
+<ul>
+<li>建立NAT  (nat.tf)</li>
+<li>修正<strong>Private Subnet</strong>路由 (route.tf)</li>
+<li>修正顯示訊息 (myDatasource.tf)</li>
+<li>執行 Terraform</li>
+<li>測試</li>
+<li>清理Lab所建立的所有元件</li>
+</ul>
+<h2 id="開始部署之前"><a href="#開始部署之前" class="headerlink" title="開始部署之前"></a>開始部署之前</h2><p>本篇不是Terraform 基礎教學,若不清楚Terraform可以看參考資料。</p>
+<ul>
+<li><p>安裝Terraform 很簡單可以看<a target="_blank" rel="noopener" href="https://learn.hashicorp.com/tutorials/terraform/install-cli">官網-Install Terraform</a></p>
+</li>
+<li><p>使用AWS API之前都需要先到IAM 設定申請一組<strong>key</strong>及<strong>SECRET_ACCESS_KEY</strong></p>
+<p>因為只是LAB,為了方便執行通常都會將申請好的key放置在shell script</p>
+<p><strong>myauth_key.sh</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="built_in">export</span> AWS_ACCESS_KEY_ID=<span class="string">&#x27;your key id&#x27;</span></span><br><span class="line"><span class="built_in">export</span> AWS_SECRET_ACCESS_KEY=<span class="string">&#x27;your secret key&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>在執行任何AWS API或Terraform之前先執行 <strong>myauth_key.sh</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> ./myhome-auth_key.sh</span><br></pre></td></tr></table></figure></li>
+<li><p>完整Terraform Hcl code 於 <a target="_blank" rel="noopener" href="https://github.com/88gocode/AWS-LAB-Terraform">88gocode/AWS-LAB-Terraform</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/88gocode/AWS-LAB-Terraform.git</span><br><span class="line"><span class="built_in">cd</span> AWS-LAB-Terraform</span><br><span class="line">git checkout lab3</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="建立NAT-nat-tf"><a href="#建立NAT-nat-tf" class="headerlink" title="建立NAT (nat.tf)"></a>建立NAT (nat.tf)</h2><p> NAT 元件須建立在 <strong>Public Subnet</strong> , 另外創建 EIP, 給予 NAT 出去有一個Public IP (nat_gateway_IP)</p>
+<ul>
+<li>Subnet :  aws_subnet.az1-public1-subnet.id</li>
+<li>NAT 名稱：  <strong>nat_gw_lab0</strong></li>
+<li>EIP:  <strong>aws_eip.nat_eip_lab0.id</strong></li>
+</ul>
+<p><strong>nat.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">resource &quot;aws_eip&quot; &quot;nat_eip_lab0&quot; &#123;</span><br><span class="line">   vpc &#x3D; true</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">resource &quot;aws_nat_gateway&quot; &quot;gw&quot; &#123;</span><br><span class="line">   allocation_id &#x3D; aws_eip.nat_eip_lab0.id</span><br><span class="line">   subnet_id     &#x3D; aws_subnet.az1-public1-subnet.id</span><br><span class="line">   depends_on &#x3D; [aws_internet_gateway.main-igw]</span><br><span class="line">   tags &#x3D; &#123;</span><br><span class="line">       Name &#x3D; &quot;nat_gw_lab0&quot;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="修正Private-Subnet路由-route-tf"><a href="#修正Private-Subnet路由-route-tf" class="headerlink" title="修正Private Subnet路由 (route.tf)"></a>修正<strong>Private Subnet</strong>路由 (route.tf)</h2><p>增加一筆預設路由往 NAT 走</p>
+<p><strong>route.tf</strong>  , 修正 Private Subnet 部分</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># Create Private  Route Table</span><br><span class="line">resource &quot;aws_route_table&quot; &quot;main-private-rt&quot; &#123;</span><br><span class="line">  vpc_id &#x3D; aws_vpc.main.id</span><br><span class="line"></span><br><span class="line">  route  &#123;</span><br><span class="line">   cidr_block &#x3D; &quot;0.0.0.0&#x2F;0&quot;</span><br><span class="line">   gateway_id &#x3D; aws_nat_gateway.gw.id</span><br><span class="line">  &#125;</span><br><span class="line">  tags &#x3D; &#123;</span><br><span class="line">      Name &#x3D; &quot;AZ1-Private-Rtable&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="修正顯示訊息-myDatasource-tf"><a href="#修正顯示訊息-myDatasource-tf" class="headerlink" title="修正顯示訊息 (myDatasource.tf)"></a>修正顯示訊息 (myDatasource.tf)</h2><p>Terraform 部署完後, 增加顯示 nat_gateway_IP</p>
+<p><strong>myDatasource.tf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">output &quot;nat_gateway_IP&quot; &#123;</span><br><span class="line">  value &#x3D; aws_nat_gateway.gw.public_ip</span><br><span class="line">  description &#x3D; &quot;Public IP for Nat Gateway&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="執行-Terraform"><a href="#執行-Terraform" class="headerlink" title="執行 Terraform"></a>執行 Terraform</h2><p>第一次執行Terraform,需要初始化先下載對應的Provider (本篇是 AWS),完成後,於所在目錄底下有一個隱藏檔 <strong>.terraform</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform init</span><br></pre></td></tr></table></figure>
+<p>可以查看剛寫的 terraform 語法是否正確</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform validate</span><br></pre></td></tr></table></figure>
+<p>執行測試計畫,可以看所列的參數</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform plan</span><br></pre></td></tr></table></figure>
+<p>開始部署</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform apply  -auto-approve</span><br></pre></td></tr></table></figure>
+
+<p>建立好 EC2, 查看分配<strong>Private IP</strong>,及EC2 <strong>Public IP</strong> , 及 <strong>nat_gateway_IP</strong></p>
+<p><img src="https://i.imgur.com/yO1jEFw.png"></p>
+<h2 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h2><ul>
+<li><p>透過public ip 使用 ssh 加上 key 的方式連進來, 再連去 Private Subnet 的EC2</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh-add  my-test.pem</span><br><span class="line">ssh -A ec2-user@15.152.40.138</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://i.imgur.com/6NYftG0.png"></p>
+</li>
+<li><p>於AZ1-Private-EC2_1, 測試是否能聯外<br><img src="https://i.imgur.com/vkzCSIg.png"></p>
+</li>
+</ul>
+<h2 id="清理"><a href="#清理" class="headerlink" title="清理"></a>清理</h2><p>AWS 的價值貴於方便與彈性,使用多少算多少錢,因此這個只是個LAB ,不用時記得將他清理刪除。<br>使用Terraform  只要下以下指令即可清理完成。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">terraform destroy</span><br></pre></td></tr></table></figure>
+<h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://registry.terraform.io/providers/hashicorp/aws/latest/docs">Terraform_AWS</a></li>
+<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10262172l">Day 5 網路寶石：AWS VPC 架構 Routes &amp; Security (上) </a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.utshop.tw/2022/01/09/2022-01-09-AWS_VPC-LAB2_By-Terraform/">AWS_VPC-LAB2_By-Terraform</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/01/09/2022-01-09-AWS_VPC-LAB2_By-Terraform/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1302,88 +1439,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2018/06/17/base-Flask-app1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Alicode">
-      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="阿里發發電腦筆記">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2018/06/17/base-Flask-app1/" class="post-title-link" itemprop="url">基礎1：Flask 建立一個app</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">發表於</span>
-
-              <time title="創建時間：2018-06-17 15:07:09" itemprop="dateCreated datePublished" datetime="2018-06-17T15:07:09+08:00">2018-06-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2021-12-05 20:17:33" itemprop="dateModified" datetime="2021-12-05T20:17:33+08:00">2021-12-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="基礎：Flask-建立一個app"><a href="#基礎：Flask-建立一個app" class="headerlink" title="基礎：Flask 建立一個app"></a>基礎：Flask 建立一個app</h1><h2 id="簡單範例-Hello-World"><a href="#簡單範例-Hello-World" class="headerlink" title="簡單範例 Hello World"></a>簡單範例 Hello World</h2><p>demo.py</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;&lt;h1&gt;Hello World&lt;/h1&gt;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/home&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index2</span>():</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;My Home&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>  __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;127.0.0.1&#x27;</span>,port=<span class="number">8099</span>,debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
-
-<h2 id="啟動"><a href="#啟動" class="headerlink" title="啟動"></a>啟動</h2><p>啟動一個 web 服務, listen 127.0.0.1:8099</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./demo.py</span><br><span class="line">或是 python3 demo.py</span><br></pre></td></tr></table></figure>
-
-<h2 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h2><p>在Browser 測試兩個網址,看看會回應什麼變化。</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/">http://127.0.0.1:8099</a></li>
-<li><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/home">http://127.0.0.1:8099/home</a></li>
-<li><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/home/">http://127.0.0.1:8099/home/</a></li>
-</ul>
-<h2 id="說明"><a href="#說明" class="headerlink" title="說明"></a>說明</h2><ul>
-<li> Flask 類 傳入的參數  ‘<strong>name</strong>‘ ,表示 程式的根目錄</li>
-<li> @app.route  裝飾器  將 url  與   視圖函數(View)   def index()  關聯到 app.url_map 屬性上 。處理 url  與 視圖函數的過程稱為路由(route)</li>
-<li> app.run 使用 Python 標準函數  BaseHTTPServer.HTTPServer 啟動一個 web 服務。有 host , port , debug 等諸多參數</li>
-<li> Flask 使用  唯一URL 。   使用 curl  <a target="_blank" rel="noopener" href="http://127.0.0.1:8099/home">http://127.0.0.1:8099/home</a>  (回 http stat code  200)  與  curl  <a target="_blank" rel="noopener" href="http://127.0.0.1:8099/home/">http://127.0.0.1:8099/home/</a>   (回http stat code 404)   回應結果不同。</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1453,7 +1508,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-count">22</span>
           <span class="site-state-item-name">文章</span>
         </a>
       </div>
