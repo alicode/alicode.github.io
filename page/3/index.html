@@ -183,6 +183,112 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/06/18/2017-06-18_ACL-For-Nginx/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/06/18/2017-06-18_ACL-For-Nginx/" class="post-title-link" itemprop="url">ACL For Nginx</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2017-06-18 00:00:00" itemprop="dateCreated datePublished" datetime="2017-06-18T00:00:00+08:00">2017-06-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-18 20:55:08" itemprop="dateModified" datetime="2021-12-18T20:55:08+08:00">2021-12-18</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ACL-For-Nginx-目錄"><a href="#ACL-For-Nginx-目錄" class="headerlink" title="ACL For Nginx - 目錄"></a>ACL For Nginx - 目錄</h1><ul>
+<li><p><a href="#%E5%89%8D%E8%A8%80">前言</a></p>
+</li>
+<li><p><a href="#config">配置設定檔</a></p>
+</li>
+<li><p><a href="#test">測試</a></p>
+</li>
+<li><p><a href="#reference">參考資料</a></p>
+<h2 id="前言">前言</h2>
+利用Nginx 建立一個簡單的存取控制列表。假設我要阻擋從SG(新加坡)及TW(台灣)來的IP訪問Nginx,另外開放指定的台灣IP訪問Nginx。以下是本篇要使用的材料:</li>
+<li><p><strong>Linux 平台 Centos6 x86_64</strong></p>
+</li>
+<li><p><strong><a href="http://tengine.taobao.org/%22target=%22_blank">Tengine</a></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Tengine 是由淘寶網改寫Nginx,而釋放出來的原始碼版本。設定即使用與官方Nginx一樣。 </span><br></pre></td></tr></table></figure></li>
+<li><p><strong><a href="http://nginx.org/en/docs/http/ngx_http_geoip_module.html%22target=%22_blank">ngx_http_geoip_module.so 模組</a></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">geoip此模組功用是利用Maxmind GeoIP2資料檔來識別來源IP是屬於哪個國家(ex: TW, US, JP,SG,RU,CN...等等)</span><br></pre></td></tr></table></figure></li>
+<li><p><strong><a href="https://github.com/openresty/lua-nginx-module/blob/master/README.markdown#installation%22target=%22_blank">ngx_http_lua_module.so 模組</a></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Lua是一套輕巧,執行效率高的script語言。需多應用程式利用Lua作為自己的嵌入式手稿語言,加入此模組之後,Nginx就可在設定檔中撰寫Lua做些邏輯性的控制。 </span><br></pre></td></tr></table></figure>
+<h2 id="config">配置設定檔</h2>
+這邊不會將全部設定檔寫出來,只會寫與本篇相關設定及參數,並顯示設定檔的相對位置。</li>
+</ul>
+<h5 id="載入Lua-及-Geoip-模組"><a href="#載入Lua-及-Geoip-模組" class="headerlink" title="載入Lua 及 Geoip 模組"></a>載入Lua 及 Geoip 模組</h5><ul>
+<li>將Lua及 Geoip 放置在此路徑下<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;etc&#x2F;nginx&#x2F;modules&#x2F;</span><br><span class="line">├── ngx_http_geoip_module.so</span><br><span class="line">└── ngx_http_lua_module.so</span><br></pre></td></tr></table></figure></li>
+<li>在此檔案 /etc/nginx/nginx.conf 修改 Nginx設定檔<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">dso &#123; </span><br><span class="line">      path &#x2F;etc&#x2F;nginx&#x2F;modules&#x2F;;</span><br><span class="line">       load ngx_http_lua_module.so;</span><br><span class="line">       load ngx_http_geoip_module.so;</span><br><span class="line">&#125;</span><br><span class="line">http&#123;</span><br><span class="line">...</span><br><span class="line">server &#123;</span><br><span class="line">   location &#x2F; &#123;</span><br><span class="line">   .....</span><br><span class="line">   &#125;</span><br><span class="line">....</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>利用以下指令 reload Ninx 及 顯示模組是否有被載入<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@andy]#nginx -t  &amp;&amp; &#x2F;etc&#x2F;init.d&#x2F;nginx reload</span><br><span class="line">[root@andy]#nginx -m</span><br><span class="line">Tengine version: Tengine&#x2F;2.1.0 (nginx&#x2F;1.6.2)</span><br><span class="line">loaded modules:</span><br><span class="line">...</span><br><span class="line">ngx_http_lua_module (shared, 3.1)</span><br><span class="line">ngx_http_geoip_module (shared, 3.1)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h5 id="在此檔案-etc-nginx-nginx-conf-修改Geoip-及-開放IP等設定"><a href="#在此檔案-etc-nginx-nginx-conf-修改Geoip-及-開放IP等設定" class="headerlink" title="在此檔案 /etc/nginx/nginx.conf 修改Geoip 及 開放IP等設定"></a>在此檔案 /etc/nginx/nginx.conf 修改Geoip 及 開放IP等設定</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">http&#123;</span><br><span class="line">    #Maxmind GeoIP2資料檔</span><br><span class="line">    geoip_country &#x2F;usr&#x2F;local&#x2F;share&#x2F;GeoIP&#x2F;GeoIP.dat;</span><br><span class="line"></span><br><span class="line">    # 將阻擋國家簡碼寫在此。 0表阻擋 ; 1 表示開放預設值</span><br><span class="line">    map $geoip_country_code $chek_flag</span><br><span class="line">    &#123;</span><br><span class="line">     default 1;</span><br><span class="line">     SG  0;</span><br><span class="line">     TW  0;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">   # 將要開放IP寫在此。  1 表示開放 ; 0為預設值不開放。</span><br><span class="line">    geo $whitelist&#123;</span><br><span class="line">            default 0;</span><br><span class="line">            116.241.114.0&#x2F;24 1; #這是某個台灣IP</span><br><span class="line">    &#125;</span><br><span class="line">server &#123;</span><br><span class="line">   location &#x2F; &#123;</span><br><span class="line">   .....</span><br><span class="line">   &#125;</span><br><span class="line">....</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="使用Lua-模組做流程控制"><a href="#使用Lua-模組做流程控制" class="headerlink" title="使用Lua 模組做流程控制"></a>使用Lua 模組做流程控制</h5></li>
+<li>要修改的設定檔<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;</span><br><span class="line">├── 1-showip.conf</span><br><span class="line">└── showip.lua</span><br></pre></td></tr></table></figure></li>
+<li>修改此設定檔 /etc/nginx/conf.d/1-showip.conf<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">http&#123;</span><br><span class="line">...</span><br><span class="line">server &#123;</span><br><span class="line">    listen       80;</span><br><span class="line">    server_name  ip2.aligogo.pw;</span><br><span class="line">    access_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;showip-access.log  main;</span><br><span class="line">    error_log   &#x2F;var&#x2F;log&#x2F;nginx&#x2F;showip-error.log;</span><br><span class="line">    location &#x2F; &#123;</span><br><span class="line">        default_type text&#x2F;html;</span><br><span class="line">        #lua 流程控制寫在此,showip.lua</span><br><span class="line">        content_by_lua_file &#x2F;etc&#x2F;nginx&#x2F;conf.d&#x2F;showip.lua;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    location &#x2F;showcode &#123;</span><br><span class="line">        default_type text&#x2F;html;       </span><br><span class="line">        content_by_lua &#39;ngx.say(&quot;&lt;center&gt;&lt;h1&gt;&quot;,ngx.var.geoip_country_code,&quot; &quot;,ngx.var.remote_addr,&quot;&lt;&#x2F;h1&gt;&lt;&#x2F;center&gt;&quot;)&#39;;</span><br><span class="line">    &#125;</span><br><span class="line">    #error_page   500 502 503 504  &#x2F;50x.html;</span><br><span class="line">    location &#x3D; &#x2F;50x.html &#123; root  &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html; &#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>修改此設定檔 /etc/nginx/conf.d/showip.lua<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">-- 指定要允許ip的判斷。</span><br><span class="line">if ngx.var.whitelist &#x3D;&#x3D; &quot;1&quot; then</span><br><span class="line">-- 秀ip 及國碼</span><br><span class="line">    ngx.exec(&#39;&#x2F;showcode&#39;);</span><br><span class="line">end</span><br><span class="line">-- 阻擋國家的判斷。</span><br><span class="line">if ngx.var.chek_flag  &#x3D;&#x3D; &quot;0&quot; then</span><br><span class="line">        ngx.exit(ngx.HTTP_FORBIDDEN)</span><br><span class="line">end</span><br><span class="line">--  以上沒被判斷到的</span><br><span class="line">ngx.exec(&#39;&#x2F;showcode&#39;);</span><br></pre></td></tr></table></figure></li>
+<li>reload Nginx<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@andy]#nginx -t  &amp;&amp; &#x2F;etc&#x2F;init.d&#x2F;nginx reload</span><br></pre></td></tr></table></figure>
+<h2 id="test">測試</h2></li>
+<li>測試阻擋SG新加坡IP<br><img src="https://i.imgur.com/Tgqp7rz.png" alt="test_SG"></li>
+<li>測試開放指定TW IP<br><img src="https://i.imgur.com/RTCyFfd.png" alt="test_TW"></li>
+</ul>
+<h2 id="reference">參考資料</h2>
+- [Nginx Doc](http://nginx.org/en/docs/)
+- [tengine](http://tengine.taobao.org/)
+- [Nginx使用GeoIP2的拓展模塊處理不同國家的訪問](https://idoseek.com/1774)
+- [GeoIP2 Downloadable Databases](http://dev.maxmind.com/geoip/geoip2/downloadable/)
+- [openresty_lua-nginx-module](https://github.com/openresty/lua-nginx-module/blob/master/README.markdown)
+- [Lua-wiki](https://zh.wikipedia.org/wiki/Lua)
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
     <link itemprop="mainEntityOfPage" href="http://example.com/2017/03/12/2017-03-12_Nginx-Location-Matching/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -688,7 +794,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">23</span>
           <span class="site-state-item-name">文章</span>
         </a>
       </div>

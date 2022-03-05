@@ -1537,4 +1537,53 @@ vpnserver  啟動腳本; /etc/init.d/vpnserver
         <tag>Terraform</tag>
       </tags>
   </entry>
+  <entry>
+    <title>使用kops建立K8s_Cluster_on_AWS</title>
+    <url>/2021/10/17/2021-10-17_kops%E5%BB%BA%E7%AB%8BK8s_Cluster_on_AWS/</url>
+    <content><![CDATA[<h1 id="使用kops建立K8s-Cluster-on-AWS"><a href="#使用kops建立K8s-Cluster-on-AWS" class="headerlink" title="使用kops建立K8s_Cluster_on_AWS"></a>使用kops建立K8s_Cluster_on_AWS</h1><h2 id="事前準備"><a href="#事前準備" class="headerlink" title="事前準備"></a>事前準備</h2><ul>
+<li><p> 需要有一個AWS帳號</p>
+</li>
+<li><p>使用IAM 建立一個使用者供 aws_cli 使用</p>
+</li>
+<li><p>需要一個Domain Name<br>目前有一個 <strong>tw88go.top</strong> 由CloudFlare 代管<br>之後使用<strong>kops.tw88go.top</strong> 將此領域轉給 <strong>AWS Route53</strong>代管</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">kops.tw88go.top</span><br></pre></td></tr></table></figure></li>
+<li><p>使用AWS route53指定Domain Name</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">aws route53 create-hosted-zone --name kops.tw88go.top --caller-reference 1</span><br></pre></td></tr></table></figure>
+<p>會有輸出NameServers,如以下資訊</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&quot;DelegationSet&quot;: &#123;</span><br><span class="line">        &quot;NameServers&quot;: [</span><br><span class="line">            &quot;ns-753.awsdns-30.net&quot;, </span><br><span class="line">            &quot;ns-1665.awsdns-16.co.uk&quot;, </span><br><span class="line">            &quot;ns-500.awsdns-62.com&quot;, </span><br><span class="line">            &quot;ns-1475.awsdns-56.org&quot;</span><br><span class="line">        ]</span><br><span class="line">    &#125;, </span><br></pre></td></tr></table></figure>
+<p> 將以上4個DNS Domain bind在 CloudFlare,如下圖:</p>
+<p> <img src="https://i.imgur.com/pgyR5gk.png"></p>
+</li>
+<li><p>建立一個S3 bucket<br>建立S3 bucket主要作用是儲存 K8s Cluster state。<br>當建立K8s Cluster 的設定檔,metadata等都會儲存在bucket</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">aws s3 mb s3://clusters.kops.tw88go.top</span><br></pre></td></tr></table></figure>
+<h2 id="開始使用-kops-建立-K8s"><a href="#開始使用-kops-建立-K8s" class="headerlink" title="開始使用 kops 建立 K8s"></a>開始使用 kops 建立 K8s</h2></li>
+<li><p>下載 kops</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d <span class="string">&#x27;&quot;&#x27;</span> -f 4)/kops-linux-amd64</span><br><span class="line">sudo mv  kops-linux-amd64  /usr/<span class="built_in">local</span>/bin/kops</span><br><span class="line">chmod a+x /usr/<span class="built_in">local</span>/bin/kops</span><br></pre></td></tr></table></figure></li>
+<li><p>建立 K8s<br>以下指令只是建立K8s設定檔 ,並上傳指定S3 bucket<br>指定<strong>KOPS_STATE_STORE</strong>環境變數,就不必使用 <strong>–state=s3://clusters.kops.tw88go.top</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">KOPS_STATE_STORE=s3://clusters.kops.tw88go.top</span><br><span class="line">kops create cluster --name=kops.tw88go.top --zones=ap-northeast-3a --master-size=t2.micro --node-size=t2.micro --node-count=2 --dns-zone=kops.tw88go.top</span><br></pre></td></tr></table></figure></li>
+<li><p>套用以上建立的設定檔</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kops update cluster --name kops.tw88go.top --yes --admin</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="小試身手-kubectl"><a href="#小試身手-kubectl" class="headerlink" title="小試身手-kubectl"></a>小試身手-kubectl</h2><ul>
+<li>簡單建立1個pod<br>pod_nginx.yml<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">pod-nginx</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">nginx</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl create -f pod_nginx.yml</span><br></pre></td></tr></table></figure></li>
+<li>將pod 以 LoadBalancer 方式提供服務<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl expose pod pod-nginx --<span class="built_in">type</span>=LoadBalancer</span><br><span class="line">kubectl get svc pod-nginx</span><br></pre></td></tr></table></figure>
+輸出以下資訊<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">NAME        TYPE           CLUSTER-IP      EXTERNAL-IP                                                                   PORT(S)        AGE</span><br><span class="line">pod-nginx   LoadBalancer   100.67.121.49   a3954a6f5f72848eba9df65e0b6f8842-871043940.ap-northeast-3.elb.amazonaws.com   80:30493&#x2F;TCP   9m44s</span><br></pre></td></tr></table></figure></li>
+<li> test Access EXTERNAL-IP<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl a3954a6f5f72848eba9df65e0b6f8842-871043940.ap-northeast-3.elb.amazonaws.com</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="清除-K8s-Cluster"><a href="#清除-K8s-Cluster" class="headerlink" title="清除 K8s Cluster"></a>清除 K8s Cluster</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kops delete cluster --name kops.tw88go.top  --yes</span><br></pre></td></tr></table></figure>
+
+<h2 id="參考資料："><a href="#參考資料：" class="headerlink" title="參考資料："></a>參考資料：</h2><ul>
+<li><a href="https://kubernetes.io/docs/setup/production-environment/tools/kops/">Installing Kubernetes with kops</a></li>
+<li><a href="https://ithelp.ithome.com.tw/articles/10195575">[Day 15] 介紹 kops - 在 AWS 上打造 Kubernetes Cluster (上)</a></li>
+<li><a href="https://ithelp.ithome.com.tw/articles/10195765">[Day 16] 介紹 kops - 在 AWS 上打造 Kubernetes Cluster (下)</a></li>
+<li><a href="https://shazi.info/aws-%E9%80%8F%E9%81%8E-kops-%E5%AE%89%E8%A3%9D-kubernetes-cluster/">AWS 透過 kops 安裝 Kubernetes Cluster</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>K8s</tag>
+        <tag>AWS</tag>
+        <tag>Cloud</tag>
+      </tags>
+  </entry>
 </search>

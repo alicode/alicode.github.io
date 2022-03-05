@@ -1007,6 +1007,109 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/10/17/2021-10-17_kops%E5%BB%BA%E7%AB%8BK8s_Cluster_on_AWS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/10/17/2021-10-17_kops%E5%BB%BA%E7%AB%8BK8s_Cluster_on_AWS/" class="post-title-link" itemprop="url">使用kops建立K8s_Cluster_on_AWS</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2021-10-17 15:30:00" itemprop="dateCreated datePublished" datetime="2021-10-17T15:30:00+08:00">2021-10-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2022-03-05 11:14:20" itemprop="dateModified" datetime="2022-03-05T11:14:20+08:00">2022-03-05</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="使用kops建立K8s-Cluster-on-AWS"><a href="#使用kops建立K8s-Cluster-on-AWS" class="headerlink" title="使用kops建立K8s_Cluster_on_AWS"></a>使用kops建立K8s_Cluster_on_AWS</h1><h2 id="事前準備"><a href="#事前準備" class="headerlink" title="事前準備"></a>事前準備</h2><ul>
+<li><p> 需要有一個AWS帳號</p>
+</li>
+<li><p>使用IAM 建立一個使用者供 aws_cli 使用</p>
+</li>
+<li><p>需要一個Domain Name<br>目前有一個 <strong>tw88go.top</strong> 由CloudFlare 代管<br>之後使用<strong>kops.tw88go.top</strong> 將此領域轉給 <strong>AWS Route53</strong>代管</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kops.tw88go.top</span><br></pre></td></tr></table></figure></li>
+<li><p>使用AWS route53指定Domain Name</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aws route53 create-hosted-zone --name kops.tw88go.top --caller-reference 1</span><br></pre></td></tr></table></figure>
+<p>會有輸出NameServers,如以下資訊</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&quot;DelegationSet&quot;: &#123;</span><br><span class="line">        &quot;NameServers&quot;: [</span><br><span class="line">            &quot;ns-753.awsdns-30.net&quot;, </span><br><span class="line">            &quot;ns-1665.awsdns-16.co.uk&quot;, </span><br><span class="line">            &quot;ns-500.awsdns-62.com&quot;, </span><br><span class="line">            &quot;ns-1475.awsdns-56.org&quot;</span><br><span class="line">        ]</span><br><span class="line">    &#125;, </span><br></pre></td></tr></table></figure>
+<p> 將以上4個DNS Domain bind在 CloudFlare,如下圖:</p>
+<p> <img src="https://i.imgur.com/pgyR5gk.png"></p>
+</li>
+<li><p>建立一個S3 bucket<br>建立S3 bucket主要作用是儲存 K8s Cluster state。<br>當建立K8s Cluster 的設定檔,metadata等都會儲存在bucket</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aws s3 mb s3://clusters.kops.tw88go.top</span><br></pre></td></tr></table></figure>
+<h2 id="開始使用-kops-建立-K8s"><a href="#開始使用-kops-建立-K8s" class="headerlink" title="開始使用 kops 建立 K8s"></a>開始使用 kops 建立 K8s</h2></li>
+<li><p>下載 kops</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d <span class="string">&#x27;&quot;&#x27;</span> -f 4)/kops-linux-amd64</span><br><span class="line">sudo mv  kops-linux-amd64  /usr/<span class="built_in">local</span>/bin/kops</span><br><span class="line">chmod a+x /usr/<span class="built_in">local</span>/bin/kops</span><br></pre></td></tr></table></figure></li>
+<li><p>建立 K8s<br>以下指令只是建立K8s設定檔 ,並上傳指定S3 bucket<br>指定<strong>KOPS_STATE_STORE</strong>環境變數,就不必使用 <strong>–state=s3://clusters.kops.tw88go.top</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">KOPS_STATE_STORE=s3://clusters.kops.tw88go.top</span><br><span class="line">kops create cluster --name=kops.tw88go.top --zones=ap-northeast-3a --master-size=t2.micro --node-size=t2.micro --node-count=2 --dns-zone=kops.tw88go.top</span><br></pre></td></tr></table></figure></li>
+<li><p>套用以上建立的設定檔</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kops update cluster --name kops.tw88go.top --yes --admin</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="小試身手-kubectl"><a href="#小試身手-kubectl" class="headerlink" title="小試身手-kubectl"></a>小試身手-kubectl</h2><ul>
+<li>簡單建立1個pod<br>pod_nginx.yml<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">pod-nginx</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">nginx</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl create -f pod_nginx.yml</span><br></pre></td></tr></table></figure></li>
+<li>將pod 以 LoadBalancer 方式提供服務<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl expose pod pod-nginx --<span class="built_in">type</span>=LoadBalancer</span><br><span class="line">kubectl get svc pod-nginx</span><br></pre></td></tr></table></figure>
+輸出以下資訊<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">NAME        TYPE           CLUSTER-IP      EXTERNAL-IP                                                                   PORT(S)        AGE</span><br><span class="line">pod-nginx   LoadBalancer   100.67.121.49   a3954a6f5f72848eba9df65e0b6f8842-871043940.ap-northeast-3.elb.amazonaws.com   80:30493&#x2F;TCP   9m44s</span><br></pre></td></tr></table></figure></li>
+<li> test Access EXTERNAL-IP<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl a3954a6f5f72848eba9df65e0b6f8842-871043940.ap-northeast-3.elb.amazonaws.com</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="清除-K8s-Cluster"><a href="#清除-K8s-Cluster" class="headerlink" title="清除 K8s Cluster"></a>清除 K8s Cluster</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kops delete cluster --name kops.tw88go.top  --yes</span><br></pre></td></tr></table></figure>
+
+<h2 id="參考資料："><a href="#參考資料：" class="headerlink" title="參考資料："></a>參考資料：</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://kubernetes.io/docs/setup/production-environment/tools/kops/">Installing Kubernetes with kops</a></li>
+<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10195575">[Day 15] 介紹 kops - 在 AWS 上打造 Kubernetes Cluster (上)</a></li>
+<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10195765">[Day 16] 介紹 kops - 在 AWS 上打造 Kubernetes Cluster (下)</a></li>
+<li><a target="_blank" rel="noopener" href="https://shazi.info/aws-%E9%80%8F%E9%81%8E-kops-%E5%AE%89%E8%A3%9D-kubernetes-cluster/">AWS 透過 kops 安裝 Kubernetes Cluster</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
     <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/17/First-Hexo/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1326,119 +1429,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2018/06/17/base-Flask-app2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Alicode">
-      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="阿里發發電腦筆記">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2018/06/17/base-Flask-app2/" class="post-title-link" itemprop="url">基礎2：Flask URL 傳值</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">發表於</span>
-
-              <time title="創建時間：2018-06-17 15:21:58" itemprop="dateCreated datePublished" datetime="2018-06-17T15:21:58+08:00">2018-06-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2021-12-05 20:17:33" itemprop="dateModified" datetime="2021-12-05T20:17:33+08:00">2021-12-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="基礎：Flask-URL-傳值"><a href="#基礎：Flask-URL-傳值" class="headerlink" title="基礎：Flask URL 傳值"></a>基礎：Flask URL 傳值</h1><h2 id="url-傳值範例"><a href="#url-傳值範例" class="headerlink" title="url 傳值範例"></a>url 傳值範例</h2><p>demo2.py</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/home/&lt;id&gt;&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index2</span>(<span class="params"><span class="built_in">id</span></span>):</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;My Home in &#x27;</span>  +  <span class="built_in">id</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>  __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;127.0.0.1&#x27;</span>,port=<span class="number">8099</span>,debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
-
-<h2 id="測試執行"><a href="#測試執行" class="headerlink" title="測試執行"></a>測試執行</h2><ul>
-<li><p><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/home/Taichung">http://127.0.0.1:8099/home/Taichung</a></p>
-<p>(回應) My Home in Taichung</p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/home/Taipei">http://127.0.0.1:8099/home/Taipei</a></p>
-<p>(回應) My Home in Taipei</p>
-</li>
-</ul>
-<h2 id="參數類型"><a href="#參數類型" class="headerlink" title="參數類型"></a>參數類型</h2><p>標記的 <id> ,可以指定參數類型</p>
-<ul>
-<li>語法:<br>&lt;類型:id&gt;</li>
-<li>類型:<ul>
-<li>string:沒有接受 斜線的文字(預設)</li>
-<li>int</li>
-<li>float</li>
-<li>path: 和預設一樣 ,但接受斜線</li>
-<li>uuid</li>
-<li>any: 指定多種路徑</li>
-</ul>
-</li>
-</ul>
-<h3 id="指定類型範例"><a href="#指定類型範例" class="headerlink" title="指定類型範例"></a>指定類型範例</h3><p>demo2-1.py</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/home/&lt;int:id&gt;&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index2</span>(<span class="params"><span class="built_in">id</span></span>):</span></span><br><span class="line">    test=<span class="number">100</span> + <span class="built_in">id</span></span><br><span class="line">    test=<span class="built_in">str</span>(test)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;Google Number: &#x27;</span>  +  test</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&lt;any(Taichung,Taipei,AAA,BBB):lo&gt;/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">index3</span>(<span class="params">lo</span>):</span></span><br><span class="line">    <span class="keyword">return</span>    <span class="string">&#x27;My Home is in &#x27;</span> +  lo</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>  __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    app.run(host=<span class="string">&#x27;127.0.0.1&#x27;</span>,port=<span class="number">8099</span>,debug=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
-
-<h3 id="指定類型執行"><a href="#指定類型執行" class="headerlink" title="指定類型執行"></a>指定類型執行</h3><ul>
-<li><p><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/home/1234">http://127.0.0.1:8099/home/1234</a></p>
-<p>(回應) Google Number: 1334</p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/home/aaa">http://127.0.0.1:8099/home/aaa</a></p>
-<p>(回應) 404  Not Found</p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/Taichung">http://127.0.0.1:8099/Taichung</a></p>
-<p>(回應) My Home is in Taichung</p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/Taipei">http://127.0.0.1:8099/Taipei</a></p>
-<p>(回應) My Home is in Taipei</p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/AAA">http://127.0.0.1:8099/AAA</a></p>
-<p>(回應) My Home is in AAA</p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/BBB">http://127.0.0.1:8099/BBB</a></p>
-<p>(回應) My Home is in BBB</p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="http://127.0.0.1:8099/AAABBB">http://127.0.0.1:8099/AAABBB</a><br>(回應) 404  Not Found</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1508,7 +1498,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">23</span>
           <span class="site-state-item-name">文章</span>
         </a>
       </div>
