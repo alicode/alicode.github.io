@@ -20,24 +20,30 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="使用kops建立K8s_Cluster_on_AWS事前準備  需要有一個AWS帳號  使用IAM 建立一個使用者供 aws_cli 使用  需要一個Domain Name目前有一個 tw88go.top 由CloudFlare 代管之後使用kops.tw88go.top 將此領域轉給 AWS Route53代管 1kops.tw88go.top 使用AWS route53指定Domain Nam">
+  <meta name="description" content="AWS_Lambda LAB1 By PythonLambda 是AWS 推出 Serverless (無伺服器)服務。與EC2 一樣同屬於運算部分,若要建立一個Application Server ,在EC2上需要部署服務器相關設定及code 等,資源不夠時也要自個設定擴展EC2運算資源或是設定 ELB 將流量負載均衡等;AWS Lambda  與 EC2不同,只需要將運算的 Applicati">
 <meta property="og:type" content="article">
-<meta property="og:title" content="使用kops建立K8s_Cluster_on_AWS">
-<meta property="og:url" content="http://example.com/2021/10/17/2021-10-17_kops%E5%BB%BA%E7%AB%8BK8s_Cluster_on_AWS/index.html">
+<meta property="og:title" content="AWS_Lambda LAB1 By Python">
+<meta property="og:url" content="http://example.com/2022/04/09/2022-04-09-AWS_Lambda-LAB1_By-Python/index.html">
 <meta property="og:site_name" content="阿里發發電腦筆記">
-<meta property="og:description" content="使用kops建立K8s_Cluster_on_AWS事前準備  需要有一個AWS帳號  使用IAM 建立一個使用者供 aws_cli 使用  需要一個Domain Name目前有一個 tw88go.top 由CloudFlare 代管之後使用kops.tw88go.top 將此領域轉給 AWS Route53代管 1kops.tw88go.top 使用AWS route53指定Domain Nam">
+<meta property="og:description" content="AWS_Lambda LAB1 By PythonLambda 是AWS 推出 Serverless (無伺服器)服務。與EC2 一樣同屬於運算部分,若要建立一個Application Server ,在EC2上需要部署服務器相關設定及code 等,資源不夠時也要自個設定擴展EC2運算資源或是設定 ELB 將流量負載均衡等;AWS Lambda  與 EC2不同,只需要將運算的 Applicati">
 <meta property="og:locale" content="zh_TW">
-<meta property="og:image" content="https://i.imgur.com/pgyR5gk.png">
-<meta property="article:published_time" content="2021-10-17T07:30:00.000Z">
-<meta property="article:modified_time" content="2022-03-05T03:14:20.293Z">
+<meta property="og:image" content="https://i.imgur.com/MqdLq7L.png">
+<meta property="og:image" content="https://i.imgur.com/zlI5oBh.png">
+<meta property="og:image" content="https://i.imgur.com/CedzMaN.png">
+<meta property="og:image" content="https://i.imgur.com/JIGOly6.png">
+<meta property="og:image" content="https://i.imgur.com/x9nZhZ3.png">
+<meta property="og:image" content="https://i.imgur.com/bhCcaGr.png">
+<meta property="og:image" content="https://i.imgur.com/uObK7yX.png">
+<meta property="article:published_time" content="2022-04-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-04-10T15:37:46.631Z">
 <meta property="article:author" content="Alicode">
-<meta property="article:tag" content="K8s">
 <meta property="article:tag" content="AWS">
 <meta property="article:tag" content="Cloud">
+<meta property="article:tag" content="Lambda">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://i.imgur.com/pgyR5gk.png">
+<meta name="twitter:image" content="https://i.imgur.com/MqdLq7L.png">
 
-<link rel="canonical" href="http://example.com/2021/10/17/2021-10-17_kops%E5%BB%BA%E7%AB%8BK8s_Cluster_on_AWS/">
+<link rel="canonical" href="http://example.com/2022/04/09/2022-04-09-AWS_Lambda-LAB1_By-Python/">
 
 
 <script id="page-configurations">
@@ -50,7 +56,7 @@
   };
 </script>
 
-  <title>使用kops建立K8s_Cluster_on_AWS | 阿里發發電腦筆記</title>
+  <title>AWS_Lambda LAB1 By Python | 阿里發發電腦筆記</title>
   
 
 
@@ -190,7 +196,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/10/17/2021-10-17_kops%E5%BB%BA%E7%AB%8BK8s_Cluster_on_AWS/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/09/2022-04-09-AWS_Lambda-LAB1_By-Python/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -203,7 +209,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          使用kops建立K8s_Cluster_on_AWS
+          AWS_Lambda LAB1 By Python
         </h1>
 
         <div class="post-meta">
@@ -213,14 +219,14 @@
               </span>
               <span class="post-meta-item-text">發表於</span>
 
-              <time title="創建時間：2021-10-17 15:30:00" itemprop="dateCreated datePublished" datetime="2021-10-17T15:30:00+08:00">2021-10-17</time>
+              <time title="創建時間：2022-04-09 00:00:00" itemprop="dateCreated datePublished" datetime="2022-04-09T00:00:00+08:00">2022-04-09</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2022-03-05 11:14:20" itemprop="dateModified" datetime="2022-03-05T11:14:20+08:00">2022-03-05</time>
+                <time title="修改時間：2022-04-10 23:37:46" itemprop="dateModified" datetime="2022-04-10T23:37:46+08:00">2022-04-10</time>
               </span>
 
           
@@ -234,44 +240,41 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="使用kops建立K8s-Cluster-on-AWS"><a href="#使用kops建立K8s-Cluster-on-AWS" class="headerlink" title="使用kops建立K8s_Cluster_on_AWS"></a>使用kops建立K8s_Cluster_on_AWS</h1><h2 id="事前準備"><a href="#事前準備" class="headerlink" title="事前準備"></a>事前準備</h2><ul>
-<li><p> 需要有一個AWS帳號</p>
+        <h1 id="AWS-Lambda-LAB1-By-Python"><a href="#AWS-Lambda-LAB1-By-Python" class="headerlink" title="AWS_Lambda LAB1 By Python"></a>AWS_Lambda LAB1 By Python</h1><p><strong>Lambda</strong> 是AWS 推出 <strong>Serverless (無伺服器)<strong>服務。與EC2 一樣同屬於運算部分,若要建立一個Application Server ,在EC2上需要部署服務器相關設定及code 等,資源不夠時也要自個設定擴展EC2運算資源或是設定 ELB 將流量負載均衡等;<strong>AWS Lambda</strong>  與 EC2不同,只需要將運算的 Application code 上傳到</strong>AWS Lambda</strong>,其他服務設定及資源擴展等等都是由 AWS 做好。</p>
+<h2 id="建立-AWS-Lambda"><a href="#建立-AWS-Lambda" class="headerlink" title="建立  AWS Lambda"></a>建立  AWS Lambda</h2><ul>
+<li><p>建立名為:  lambdaLAB1</p>
 </li>
-<li><p>使用IAM 建立一個使用者供 aws_cli 使用</p>
+<li><p>選擇application code 運算平台(runtime ,中文翻譯不好稱為執行時間) : Python 3.9</p>
 </li>
-<li><p>需要一個Domain Name<br>目前有一個 <strong>tw88go.top</strong> 由CloudFlare 代管<br>之後使用<strong>kops.tw88go.top</strong> 將此領域轉給 <strong>AWS Route53</strong>代管</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kops.tw88go.top</span><br></pre></td></tr></table></figure></li>
-<li><p>使用AWS route53指定Domain Name</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aws route53 create-hosted-zone --name kops.tw88go.top --caller-reference 1</span><br></pre></td></tr></table></figure>
-<p>會有輸出NameServers,如以下資訊</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&quot;DelegationSet&quot;: &#123;</span><br><span class="line">        &quot;NameServers&quot;: [</span><br><span class="line">            &quot;ns-753.awsdns-30.net&quot;, </span><br><span class="line">            &quot;ns-1665.awsdns-16.co.uk&quot;, </span><br><span class="line">            &quot;ns-500.awsdns-62.com&quot;, </span><br><span class="line">            &quot;ns-1475.awsdns-56.org&quot;</span><br><span class="line">        ]</span><br><span class="line">    &#125;, </span><br></pre></td></tr></table></figure>
-<p> 將以上4個DNS Domain bind在 CloudFlare,如下圖:</p>
-<p> <img src="https://i.imgur.com/pgyR5gk.png"></p>
+<li><p>其他項目預設即可:  預設上會給予將 Lambda 運算Log 上傳到 CloudWatch 的權利<br><img src="https://i.imgur.com/MqdLq7L.png"></p>
 </li>
-<li><p>建立一個S3 bucket<br>建立S3 bucket主要作用是儲存 K8s Cluster state。<br>當建立K8s Cluster 的設定檔,metadata等都會儲存在bucket</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aws s3 mb s3://clusters.kops.tw88go.top</span><br></pre></td></tr></table></figure>
-<h2 id="開始使用-kops-建立-K8s"><a href="#開始使用-kops-建立-K8s" class="headerlink" title="開始使用 kops 建立 K8s"></a>開始使用 kops 建立 K8s</h2></li>
-<li><p>下載 kops</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d <span class="string">&#x27;&quot;&#x27;</span> -f 4)/kops-linux-amd64</span><br><span class="line">sudo mv  kops-linux-amd64  /usr/<span class="built_in">local</span>/bin/kops</span><br><span class="line">chmod a+x /usr/<span class="built_in">local</span>/bin/kops</span><br></pre></td></tr></table></figure></li>
-<li><p>建立 K8s<br>以下指令只是建立K8s設定檔 ,並上傳指定S3 bucket<br>指定<strong>KOPS_STATE_STORE</strong>環境變數,就不必使用 <strong>–state=s3://clusters.kops.tw88go.top</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">KOPS_STATE_STORE=s3://clusters.kops.tw88go.top</span><br><span class="line">kops create cluster --name=kops.tw88go.top --zones=ap-northeast-3a --master-size=t2.micro --node-size=t2.micro --node-count=2 --dns-zone=kops.tw88go.top</span><br></pre></td></tr></table></figure></li>
-<li><p>套用以上建立的設定檔</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kops update cluster --name kops.tw88go.top --yes --admin</span><br></pre></td></tr></table></figure></li>
+<li><p>上傳 code: 隨即系統開啟簡易編輯器,附上Python 範例程式, 檔名為 : <strong>lambda_function</strong> , 這邊小幅修改如下,再按Deploy</p>
+</li>
+<li><p>Function code Handler: <strong>lambda_function.lambda_handler</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lambda_handler</span>(<span class="params">event, context</span>):</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;First... Post Event: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(event))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Get Key2: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(event[<span class="string">&quot;key2&quot;</span>]))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Get Key3: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(event[<span class="string">&quot;key3&quot;</span>]))</span><br><span class="line">    <span class="built_in">print</span>(context)</span><br><span class="line">    <span class="comment"># TODO implement</span></span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="string">&#x27;statusCode&#x27;</span>: <span class="number">200</span>,</span><br><span class="line">        <span class="string">&#x27;body&#x27;</span>: json.dumps(<span class="string">&#x27;Hello from Lambda! &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(event[<span class="string">&quot;key1&quot;</span>]))</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/zlI5oBh.png"></p>
+<h2 id="建立-Test"><a href="#建立-Test" class="headerlink" title="建立 Test"></a>建立 Test</h2><p>在AWS Lambda 主控台介面有一個 Test Tool ,簡單對 Function Code 使用 post 方法輸入一個 json 格式的資料, 來驗證上述的Function Code 是否合乎預期。上述 Function Code <strong>第一個參數 event object</strong>, 資料是JSON 格式, 外部輸入的資料都由<strong>event object</strong> 所接收。</p>
+</li>
+<li><p>Test event 名為: <strong>TestPost1</strong></p>
+</li>
+<li><p>Event JSON</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;key1&quot;</span>: <span class="string">&quot;AWS&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;key2&quot;</span>: <span class="string">&quot;GCP&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;key3&quot;</span>: <span class="string">&quot;Azure&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>其他預設即可</p>
+</li>
 </ul>
-<h2 id="小試身手-kubectl"><a href="#小試身手-kubectl" class="headerlink" title="小試身手-kubectl"></a>小試身手-kubectl</h2><ul>
-<li>簡單建立1個pod<br>pod_nginx.yml<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">pod-nginx</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">nginx</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl create -f pod_nginx.yml</span><br></pre></td></tr></table></figure></li>
-<li>將pod 以 LoadBalancer 方式提供服務<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl expose pod pod-nginx --<span class="built_in">type</span>=LoadBalancer</span><br><span class="line">kubectl get svc pod-nginx</span><br></pre></td></tr></table></figure>
-輸出以下資訊<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">NAME        TYPE           CLUSTER-IP      EXTERNAL-IP                                                                   PORT(S)        AGE</span><br><span class="line">pod-nginx   LoadBalancer   100.67.121.49   a3954a6f5f72848eba9df65e0b6f8842-871043940.ap-northeast-3.elb.amazonaws.com   80:30493&#x2F;TCP   9m44s</span><br></pre></td></tr></table></figure></li>
-<li> test Access EXTERNAL-IP<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl a3954a6f5f72848eba9df65e0b6f8842-871043940.ap-northeast-3.elb.amazonaws.com</span><br></pre></td></tr></table></figure></li>
+<p><img src="https://i.imgur.com/CedzMaN.png"><br><img src="https://i.imgur.com/JIGOly6.png"><br><img src="https://i.imgur.com/x9nZhZ3.png"></p>
+<h2 id="查看AWS-Lambda-運算結果"><a href="#查看AWS-Lambda-運算結果" class="headerlink" title="查看AWS Lambda 運算結果"></a>查看AWS Lambda 運算結果</h2><ul>
+<li><p>於Lambda 主控台看到 response結果</p>
+<p><img src="https://i.imgur.com/bhCcaGr.png"></p>
+</li>
+<li><p>於<strong>AWS CloudWatch</strong> 看到 response結果</p>
+<p><img src="https://i.imgur.com/uObK7yX.png"></p>
+</li>
 </ul>
-<h2 id="清除-K8s-Cluster"><a href="#清除-K8s-Cluster" class="headerlink" title="清除 K8s Cluster"></a>清除 K8s Cluster</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kops delete cluster --name kops.tw88go.top  --yes</span><br></pre></td></tr></table></figure>
-
-<h2 id="參考資料："><a href="#參考資料：" class="headerlink" title="參考資料："></a>參考資料：</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://kubernetes.io/docs/setup/production-environment/tools/kops/">Installing Kubernetes with kops</a></li>
-<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10195575">[Day 15] 介紹 kops - 在 AWS 上打造 Kubernetes Cluster (上)</a></li>
-<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10195765">[Day 16] 介紹 kops - 在 AWS 上打造 Kubernetes Cluster (下)</a></li>
-<li><a target="_blank" rel="noopener" href="https://shazi.info/aws-%E9%80%8F%E9%81%8E-kops-%E5%AE%89%E8%A3%9D-kubernetes-cluster/">AWS 透過 kops 安裝 Kubernetes Cluster</a></li>
+<h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://aws.amazon.com/tw/getting-started/hands-on/run-serverless-code/">執行無伺服器的 “Hello, World!”</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/zh_tw/lambda/latest/dg/python-handler.html">以 Python 編寫的 Lambda 函數處理常式 </a></li>
+<li><a target="_blank" rel="noopener" href="https://youtu.be/M91vXdjve7A">AWS API Gateway to Lambda Tutorial in Python | Build a HTTP API (2/2)</a></li>
 </ul>
 
     </div>
@@ -301,9 +304,9 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/K8s/" rel="tag"># K8s</a>
               <a href="/tags/AWS/" rel="tag"># AWS</a>
               <a href="/tags/Cloud/" rel="tag"># Cloud</a>
+              <a href="/tags/Lambda/" rel="tag"># Lambda</a>
           </div>
 
         
@@ -312,13 +315,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/04/17/First-Hexo/" rel="prev" title="First Hexo">
-      <i class="fa fa-chevron-left"></i> First Hexo
+    <a href="/2022/02/11/2022-02-12-AWS_VPC-LAB3_By-Terraform/" rel="prev" title="AWS_VPC-LAB3 By Terraform">
+      <i class="fa fa-chevron-left"></i> AWS_VPC-LAB3 By Terraform
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/12/05/hello-world/" rel="next" title="Hello World">
-      Hello World <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -377,7 +377,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8kops%E5%BB%BA%E7%AB%8BK8s-Cluster-on-AWS"><span class="nav-number">1.</span> <span class="nav-text">使用kops建立K8s_Cluster_on_AWS</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E5%89%8D%E6%BA%96%E5%82%99"><span class="nav-number">1.1.</span> <span class="nav-text">事前準備</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%96%8B%E5%A7%8B%E4%BD%BF%E7%94%A8-kops-%E5%BB%BA%E7%AB%8B-K8s"><span class="nav-number">1.2.</span> <span class="nav-text">開始使用 kops 建立 K8s</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E8%A9%A6%E8%BA%AB%E6%89%8B-kubectl"><span class="nav-number">1.3.</span> <span class="nav-text">小試身手-kubectl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E9%99%A4-K8s-Cluster"><span class="nav-number">1.4.</span> <span class="nav-text">清除 K8s Cluster</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E8%B3%87%E6%96%99%EF%BC%9A"><span class="nav-number">1.5.</span> <span class="nav-text">參考資料：</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AWS-Lambda-LAB1-By-Python"><span class="nav-number">1.</span> <span class="nav-text">AWS_Lambda LAB1 By Python</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B-AWS-Lambda"><span class="nav-number">1.1.</span> <span class="nav-text">建立  AWS Lambda</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B-Test"><span class="nav-number">1.2.</span> <span class="nav-text">建立 Test</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8BAWS-Lambda-%E9%81%8B%E7%AE%97%E7%B5%90%E6%9E%9C"><span class="nav-number">1.3.</span> <span class="nav-text">查看AWS Lambda 運算結果</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E8%B3%87%E6%96%99"><span class="nav-number">2.</span> <span class="nav-text">參考資料</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

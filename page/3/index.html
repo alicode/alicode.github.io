@@ -183,6 +183,98 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/09/16/2017-09-16_Cache-Only-DNS-Server/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/09/16/2017-09-16_Cache-Only-DNS-Server/" class="post-title-link" itemprop="url">Cache-Only DNS Server</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2017-09-16 00:00:00" itemprop="dateCreated datePublished" datetime="2017-09-16T00:00:00+08:00">2017-09-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-05 20:17:33" itemprop="dateModified" datetime="2021-12-05T20:17:33+08:00">2021-12-05</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="單純做cache-Only-DNS"><a href="#單純做cache-Only-DNS" class="headerlink" title="單純做cache-Only DNS"></a>單純做cache-Only DNS</h1><ul>
+<li><a href="#pretalk">前言</a></li>
+<li><a href="#dns_lab">LAB架構圖</a> </li>
+<li><a href="#dns_config">DNS設定檔</a></li>
+<li><a href="#dns_boot">DNS啟動</a></li>
+<li><a href="#dns_dig">DNS測試</a></li>
+<li><a href="#dns_info">參考資料</a><h2 id="pretalk">前言</h2>
+將查詢轉送到外部DNS查詢(例如:Google:8.8.8.8;中華電信:168.95.1.1),查詢回來的結果再cache一份在自己的DNS。</li>
+</ul>
+<h2 id="dns_lab">LAB架構圖</h2>
+
+<p><img src="https://i.imgur.com/QrtHf9P.png" alt="cache-only_Architecture"></p>
+<h2 id="dns_config">DNS設定檔</h2>
+
+<ul>
+<li>主設定檔: /etc/named.conf (主要是紅框的部分)<br><img src="https://i.imgur.com/WlP77GB.png" alt="cache-only"></li>
+</ul>
+<h2 id="dns_boot">DNS啟動</h2>
+- /etc/init.d/named start
+<h2 id="dns_dig">DNS測試</h2>
+- 正解測試:
+  - dig -t a www.google.com @127.0.0.1
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">; &lt;&lt;&gt;&gt; DiG 9.8.2rc1-RedHat-9.8.2-0.62.rc1.el6_9.4 &lt;&lt;&gt;&gt; -t a www.google.com @127.0.0.1</span><br><span class="line">;; global options: +cmd</span><br><span class="line">;; Got answer:</span><br><span class="line">;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 25098</span><br><span class="line">;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0</span><br><span class="line"></span><br><span class="line">;; QUESTION SECTION:</span><br><span class="line">;www.google.com.			IN	A</span><br><span class="line"></span><br><span class="line">;; ANSWER SECTION:</span><br><span class="line">www.google.com.		82	IN	A	216.58.200.228</span><br><span class="line"></span><br><span class="line">;; Query time: 82 msec</span><br><span class="line">;; SERVER: 127.0.0.1#53(127.0.0.1)</span><br><span class="line">;; MSG SIZE  rcvd: 48</span><br></pre></td></tr></table></figure>
+<h2 id="dns_info">參考資料</h2>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://dns-security.twnic.net.tw/">TWNIC 2017網安實務教育訓練-DNS設定與除錯</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
     <link itemprop="mainEntityOfPage" href="http://example.com/2017/06/18/2017-06-18_ACL-For-Nginx/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -794,14 +886,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-count">24</span>
           <span class="site-state-item-name">文章</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">標籤</span></a>
       </div>
   </nav>

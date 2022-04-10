@@ -1586,4 +1586,50 @@ vpnserver  啟動腳本; /etc/init.d/vpnserver
         <tag>Cloud</tag>
       </tags>
   </entry>
+  <entry>
+    <title>AWS_Lambda LAB1 By Python</title>
+    <url>/2022/04/09/2022-04-09-AWS_Lambda-LAB1_By-Python/</url>
+    <content><![CDATA[<h1 id="AWS-Lambda-LAB1-By-Python"><a href="#AWS-Lambda-LAB1-By-Python" class="headerlink" title="AWS_Lambda LAB1 By Python"></a>AWS_Lambda LAB1 By Python</h1><p><strong>Lambda</strong> 是AWS 推出 <strong>Serverless (無伺服器)<strong>服務。與EC2 一樣同屬於運算部分,若要建立一個Application Server ,在EC2上需要部署服務器相關設定及code 等,資源不夠時也要自個設定擴展EC2運算資源或是設定 ELB 將流量負載均衡等;<strong>AWS Lambda</strong>  與 EC2不同,只需要將運算的 Application code 上傳到</strong>AWS Lambda</strong>,其他服務設定及資源擴展等等都是由 AWS 做好。</p>
+<h2 id="建立-AWS-Lambda"><a href="#建立-AWS-Lambda" class="headerlink" title="建立  AWS Lambda"></a>建立  AWS Lambda</h2><ul>
+<li><p>建立名為:  lambdaLAB1</p>
+</li>
+<li><p>選擇application code 運算平台(runtime ,中文翻譯不好稱為執行時間) : Python 3.9</p>
+</li>
+<li><p>其他項目預設即可:  預設上會給予將 Lambda 運算Log 上傳到 CloudWatch 的權利<br><img src="https://i.imgur.com/MqdLq7L.png"></p>
+</li>
+<li><p>上傳 code: 隨即系統開啟簡易編輯器,附上Python 範例程式, 檔名為 : <strong>lambda_function</strong> , 這邊小幅修改如下,再按Deploy</p>
+</li>
+<li><p>Function code Handler: <strong>lambda_function.lambda_handler</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lambda_handler</span>(<span class="params">event, context</span>):</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;First... Post Event: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(event))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Get Key2: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(event[<span class="string">&quot;key2&quot;</span>]))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Get Key3: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(event[<span class="string">&quot;key3&quot;</span>]))</span><br><span class="line">    <span class="built_in">print</span>(context)</span><br><span class="line">    <span class="comment"># TODO implement</span></span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        <span class="string">&#x27;statusCode&#x27;</span>: <span class="number">200</span>,</span><br><span class="line">        <span class="string">&#x27;body&#x27;</span>: json.dumps(<span class="string">&#x27;Hello from Lambda! &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(event[<span class="string">&quot;key1&quot;</span>]))</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://i.imgur.com/zlI5oBh.png"></p>
+<h2 id="建立-Test"><a href="#建立-Test" class="headerlink" title="建立 Test"></a>建立 Test</h2><p>在AWS Lambda 主控台介面有一個 Test Tool ,簡單對 Function Code 使用 post 方法輸入一個 json 格式的資料, 來驗證上述的Function Code 是否合乎預期。上述 Function Code <strong>第一個參數 event object</strong>, 資料是JSON 格式, 外部輸入的資料都由<strong>event object</strong> 所接收。</p>
+</li>
+<li><p>Test event 名為: <strong>TestPost1</strong></p>
+</li>
+<li><p>Event JSON</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;key1&quot;</span>: <span class="string">&quot;AWS&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;key2&quot;</span>: <span class="string">&quot;GCP&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;key3&quot;</span>: <span class="string">&quot;Azure&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>其他預設即可</p>
+</li>
+</ul>
+<p><img src="https://i.imgur.com/CedzMaN.png"><br><img src="https://i.imgur.com/JIGOly6.png"><br><img src="https://i.imgur.com/x9nZhZ3.png"></p>
+<h2 id="查看AWS-Lambda-運算結果"><a href="#查看AWS-Lambda-運算結果" class="headerlink" title="查看AWS Lambda 運算結果"></a>查看AWS Lambda 運算結果</h2><ul>
+<li><p>於Lambda 主控台看到 response結果</p>
+<p><img src="https://i.imgur.com/bhCcaGr.png"></p>
+</li>
+<li><p>於<strong>AWS CloudWatch</strong> 看到 response結果</p>
+<p><img src="https://i.imgur.com/uObK7yX.png"></p>
+</li>
+</ul>
+<h1 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h1><ul>
+<li><a href="https://aws.amazon.com/tw/getting-started/hands-on/run-serverless-code/">執行無伺服器的 “Hello, World!”</a></li>
+<li><a href="https://docs.aws.amazon.com/zh_tw/lambda/latest/dg/python-handler.html">以 Python 編寫的 Lambda 函數處理常式 </a></li>
+<li><a href="https://youtu.be/M91vXdjve7A">AWS API Gateway to Lambda Tutorial in Python | Build a HTTP API (2/2)</a></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>AWS</tag>
+        <tag>Cloud</tag>
+        <tag>Lambda</tag>
+      </tags>
+  </entry>
 </search>

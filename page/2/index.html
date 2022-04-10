@@ -183,6 +183,114 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2018/10/13/base-Flask-template-app3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Alicode">
+      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="阿里發發電腦筆記">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2018/10/13/base-Flask-template-app3/" class="post-title-link" itemprop="url">基礎3：Flask Jinja2 模板引擎</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+
+              <time title="創建時間：2018-10-13 15:38:25" itemprop="dateCreated datePublished" datetime="2018-10-13T15:38:25+08:00">2018-10-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新於</span>
+                <time title="修改時間：2021-12-05 20:17:33" itemprop="dateModified" datetime="2021-12-05T20:17:33+08:00">2021-12-05</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="基礎：Flask-Jinja2-模板引擎"><a href="#基礎：Flask-Jinja2-模板引擎" class="headerlink" title="基礎：Flask Jinja2 模板引擎"></a>基礎：Flask Jinja2 模板引擎</h1><h2 id="本範例程式的目錄結構-使用python3-x"><a href="#本範例程式的目錄結構-使用python3-x" class="headerlink" title="本範例程式的目錄結構 (使用python3.x)"></a>本範例程式的目錄結構 (使用python3.x)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── hello.py</span><br><span class="line">└── templates</span><br><span class="line">    ├── base.html</span><br><span class="line">    ├── test2.html</span><br><span class="line">    ├── test.html</span><br><span class="line">    └── user.html</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="在Jinja2-變數的表示"><a href="#在Jinja2-變數的表示" class="headerlink" title="在Jinja2 變數的表示"></a>在Jinja2 變數的表示</h3><ul>
+<li>hello.py<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/user/&lt;name&gt;&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">user</span>(<span class="params">name</span>):</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">&#x27;user.html&#x27;</span>, name=name)</span><br></pre></td></tr></table></figure></li>
+<li>user.html<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello, &#123;&#123; name &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="在Jinja2-變數過濾器"><a href="#在Jinja2-變數過濾器" class="headerlink" title="在Jinja2 變數過濾器"></a>在Jinja2 變數過濾器</h3></li>
+<li><a href="http://jinja.pocoo.org/docs/2.10/templates/#builtin-filters%22target=%22_blank">[Jinja2 官方的過濾清單]</a></li>
+<li>呈上一的變數的表示, hello.py不變;只更改 <strong>templates/user.html</strong><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>第一個字元大寫,其餘小寫: &#123;&#123; name|capitalize &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>第一個字元大寫: &#123;&#123; name|title &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>全部字元小寫: &#123;&#123; name|lower &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>全部字元大寫: &#123;&#123; name|upper &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>變數name2 未定義,顯示預定字串: &#123;&#123; name2|default(&#x27;the name2 is not defined&#x27;) &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>變數為空值時,顯示預定字串: &#123;&#123; &#x27;&#x27;|default(&#x27;the string was empty&#x27;,true) &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>刪除前後空白字元: &#123;&#123; &#x27;   Hello~~~   &#x27;|trim &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>未移除HTML標籤: &#123;&#123; &#x27;<span class="tag">&lt;<span class="name">ul</span>&gt;</span><span class="tag">&lt;<span class="name">li</span>&gt;</span>Hello ha<span class="tag">&lt;/<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">ul</span>&gt;</span>&#x27; &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>轉譯前移除HTML標籤: &#123;&#123; &#x27;<span class="tag">&lt;<span class="name">ul</span>&gt;</span><span class="tag">&lt;<span class="name">li</span>&gt;</span>Hello ha<span class="tag">&lt;/<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">ul</span>&gt;</span>&#x27;|striptags &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>轉譯前移除HTML標籤,並再轉大寫字元: &#123;&#123; &#x27;<span class="tag">&lt;<span class="name">ul</span>&gt;</span><span class="tag">&lt;<span class="name">li</span>&gt;</span>Hello ha<span class="tag">&lt;/<span class="name">li</span>&gt;</span><span class="tag">&lt;/<span class="name">ul</span>&gt;</span>&#x27;|striptags|upper &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="在Jinja2-控制結構"><a href="#在Jinja2-控制結構" class="headerlink" title="在Jinja2 控制結構"></a>在Jinja2 控制結構</h3></li>
+<li>只更改 <strong>templates/user.html</strong>,並刪除之前的內容。判斷name 變數的值是否為andy,正確返回 hello andy ; 反之,返回 Hello EveryBody<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;% if name==&quot;andy&quot; %&#125;</span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span> Hello &#123;&#123; name &#125;&#125; !!!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">&#123;% else %&#125;</span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span> Hello EveryBody !!!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">&#123;% endif %&#125;</span><br></pre></td></tr></table></figure></li>
+<li>迴圈控制。修改<strong>hello.py</strong> 及 <strong>templates/test.html</strong>, 在hello.py 製造一個串列,將它帶往模板的迴圈來處理。</li>
+</ul>
+<p><strong>hello.py</strong></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/array/&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">arrayt</span>():</span></span><br><span class="line">    commit=[ <span class="string">&#x27;test&#x27;</span>+<span class="built_in">str</span>(xx) <span class="keyword">for</span> xx <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">10</span>)]</span><br><span class="line">    <span class="keyword">return</span>  render_template(<span class="string">&#x27;test.html&#x27;</span>,commit=commit)</span><br></pre></td></tr></table></figure>
+<p><strong>templates/test.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">&#123;% for item  in commit %&#125;</span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>Hello, &#123;&#123; item &#125;&#125;!<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">&#123;% endfor %&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>Jinja2 模板引擎也有函數結構,稱為 macro。增加以下內容到 <strong>templates/test.html</strong><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;% macro tempf(item) %&#125;</span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>from macro : &#123;&#123; item &#125;&#125;!!!&lt;/li!&gt;</span><br><span class="line">&#123;% endmacro %&#125;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">&#123;% for item  in commit %&#125;</span><br><span class="line">    &#123;&#123; tempf(item) &#125;&#125;</span><br><span class="line">&#123;% endfor %&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li>呈上一個macro 範例,使用像是 python import用法,將macro 函數寫在 <strong>template/test2.html</strong>, 修改<strong>template/test.html</strong>在匯入 test2.html。</li>
+</ul>
+<p>增加以下 到 <strong>template/test2.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;% macro tempf(item) %&#125;</span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>from macro with import : &#123;&#123; item &#125;&#125;!!!&lt;/li!&gt;</span><br><span class="line">&#123;% endmacro %&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修改 <strong>template/test.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;% import &quot;test2.html&quot; as testmacro %&#125;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">  &#123;% for item in commit %&#125;</span><br><span class="line">      &#123;&#123; testmacro.tempf(item) &#125;&#125;</span><br><span class="line">  &#123;% endfor %&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="Jinja2-模板繼承"><a href="#Jinja2-模板繼承" class="headerlink" title="Jinja2 模板繼承"></a>Jinja2 模板繼承</h3><p>網頁是由html head ,body 等標籤兩兩成對構成,通常程式回應結果只在body 區塊有所變更,沒有必要重新將相同內容放置同一個模板中,因此可以使用模板繼承方式將基礎的模板匯進來。</p>
+<ul>
+<li>基礎模板: <strong>template/base.html</strong> ; 在 <strong>template/user.html</strong>繼承基礎模板。基礎模板劃分 , head 區塊(),head 裡面 title 區塊, 及 body 區塊,現在只要改變body區塊</li>
+</ul>
+<p>增加以下內容 至 <strong>template/base.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">HTML</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    &#123;% block head %&#125;</span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span> &#123;% block title %&#125;who 123&#123;% endblock %&#125;  <span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    &#123;% endblock %&#125;</span><br><span class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    &#123;% block body %&#125;</span><br><span class="line">    &#123;% endblock %&#125;</span><br><span class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>修正內容 <strong>template/user.html</strong>,使用extends 繼承 base.html</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;% extends &quot;base.html&quot; %&#125;</span><br><span class="line">&#123;% block body %&#125;</span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello, &#123;&#123; name &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">&#123;% endblock %&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>若要在head區塊增加 一個 <strong>meta 標籤</strong>,及改變一個<strong>tile 區塊內容</strong></li>
+</ul>
+<p>修正內容 <strong>template/user.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;% extends &quot;base.html&quot; %&#125;</span><br><span class="line">&#123;% block title %&#125;Title Change &#123;&#123; name &#125;&#125;&#123;% endblock %&#125;</span><br><span class="line">&#123;% block head %&#125;</span><br><span class="line"> <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;utf-8&quot;</span> /&gt;</span></span><br><span class="line">&#123;% endblock %&#125;</span><br><span class="line">&#123;% block body %&#125;</span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello, &#123;&#123; name &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">&#123;% endblock %&#125;</span><br></pre></td></tr></table></figure>
+<p>瀏覽結果發現,網頁title 標題不見。這是因為 title 區塊位於 head 區塊內,也就是說title 是head區塊的內容;當增加<strong>meta 標籤</strong>就會覆蓋掉原本的title 的內容。要解決此問題,只要 head 區塊在增加一個 super();表示再次引用 base.html 基礎模板中的 head 區塊內容。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;% extends &quot;base.html&quot; %&#125;</span><br><span class="line">&#123;% block title %&#125;Title Change &#123;&#123; name &#125;&#125;&#123;% endblock %&#125;</span><br><span class="line">&#123;% block head %&#125;</span><br><span class="line"> <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;utf-8&quot;</span> /&gt;</span></span><br><span class="line"> &#123;&#123;super()&#125;&#125;</span><br><span class="line">&#123;% endblock %&#125;</span><br><span class="line">&#123;% block body %&#125;</span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello, &#123;&#123; name &#125;&#125;!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">&#123;% endblock %&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料:"></a>參考資料:</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.tenlong.com.tw/products/9789864768684">Flask 網頁開發, 2/e第三章</a></li>
+<li><a target="_blank" rel="noopener" href="http://docs.jinkan.org/docs/jinja2/templates.html#id19">Jinja2 中文 DOC</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
     <link itemprop="mainEntityOfPage" href="http://example.com/2018/06/17/base-Flask-app2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1134,98 +1242,6 @@ vpnserver  啟動腳本; /etc/init.d/vpnserver
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2017/09/16/2017-09-16_Cache-Only-DNS-Server/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Alicode">
-      <meta itemprop="description" content="因為愛好 Linux,主要紀錄使用Linux相關學習筆記。 舊有的wiki.utshop.tw  ghost.utshop.tw 將慢慢轉移到此">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="阿里發發電腦筆記">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2017/09/16/2017-09-16_Cache-Only-DNS-Server/" class="post-title-link" itemprop="url">Cache-Only DNS Server</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">發表於</span>
-
-              <time title="創建時間：2017-09-16 00:00:00" itemprop="dateCreated datePublished" datetime="2017-09-16T00:00:00+08:00">2017-09-16</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新於</span>
-                <time title="修改時間：2021-12-05 20:17:33" itemprop="dateModified" datetime="2021-12-05T20:17:33+08:00">2021-12-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="單純做cache-Only-DNS"><a href="#單純做cache-Only-DNS" class="headerlink" title="單純做cache-Only DNS"></a>單純做cache-Only DNS</h1><ul>
-<li><a href="#pretalk">前言</a></li>
-<li><a href="#dns_lab">LAB架構圖</a> </li>
-<li><a href="#dns_config">DNS設定檔</a></li>
-<li><a href="#dns_boot">DNS啟動</a></li>
-<li><a href="#dns_dig">DNS測試</a></li>
-<li><a href="#dns_info">參考資料</a><h2 id="pretalk">前言</h2>
-將查詢轉送到外部DNS查詢(例如:Google:8.8.8.8;中華電信:168.95.1.1),查詢回來的結果再cache一份在自己的DNS。</li>
-</ul>
-<h2 id="dns_lab">LAB架構圖</h2>
-
-<p><img src="https://i.imgur.com/QrtHf9P.png" alt="cache-only_Architecture"></p>
-<h2 id="dns_config">DNS設定檔</h2>
-
-<ul>
-<li>主設定檔: /etc/named.conf (主要是紅框的部分)<br><img src="https://i.imgur.com/WlP77GB.png" alt="cache-only"></li>
-</ul>
-<h2 id="dns_boot">DNS啟動</h2>
-- /etc/init.d/named start
-<h2 id="dns_dig">DNS測試</h2>
-- 正解測試:
-  - dig -t a www.google.com @127.0.0.1
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">; &lt;&lt;&gt;&gt; DiG 9.8.2rc1-RedHat-9.8.2-0.62.rc1.el6_9.4 &lt;&lt;&gt;&gt; -t a www.google.com @127.0.0.1</span><br><span class="line">;; global options: +cmd</span><br><span class="line">;; Got answer:</span><br><span class="line">;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, status: NOERROR, id: 25098</span><br><span class="line">;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0</span><br><span class="line"></span><br><span class="line">;; QUESTION SECTION:</span><br><span class="line">;www.google.com.			IN	A</span><br><span class="line"></span><br><span class="line">;; ANSWER SECTION:</span><br><span class="line">www.google.com.		82	IN	A	216.58.200.228</span><br><span class="line"></span><br><span class="line">;; Query time: 82 msec</span><br><span class="line">;; SERVER: 127.0.0.1#53(127.0.0.1)</span><br><span class="line">;; MSG SIZE  rcvd: 48</span><br></pre></td></tr></table></figure>
-<h2 id="dns_info">參考資料</h2>
-
-<ul>
-<li><a target="_blank" rel="noopener" href="https://dns-security.twnic.net.tw/">TWNIC 2017網安實務教育訓練-DNS設定與除錯</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1295,14 +1311,14 @@ vpnserver  啟動腳本; /etc/init.d/vpnserver
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-count">24</span>
           <span class="site-state-item-name">文章</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">標籤</span></a>
       </div>
   </nav>
